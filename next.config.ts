@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  // Fix unoptimized images warning when exporting
+  images: {
+    unoptimized: true,
+  }
 };
 
 export default nextConfig;

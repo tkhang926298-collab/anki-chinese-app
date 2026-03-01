@@ -66,3 +66,6 @@ hsk_decks.txt
 database_schema.sql
 lint-error.txt
 build.log
+
+.vercel
+.env*.local
