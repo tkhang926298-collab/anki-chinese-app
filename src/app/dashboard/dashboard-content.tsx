@@ -23,70 +23,7 @@ import { seedHskDatabase } from "@/lib/seed-db"
 export default function DashboardContent() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSeeding, setIsSeeding] = useState(false)
-    const [systemDecks, setSystemDecks] = useState<any[]>([])
     const [searchQuery, setSearchQuery] = useState('')
-
-    // Fetch System Decks from Supabase
-    useEffect(() => {
-        async function fetchSystemDecks() {
-            try {
-                const SYSTEM_DECK_IDS = [
-                    '00000000-0000-4000-8000-000000000000',
-                    '00000000-0000-4000-8000-000000000001',
-                    '00000000-0000-4000-8000-000000000002',
-                    '00000000-0000-4000-8000-000000000003',
-                    '00000000-0000-4000-8000-000000000004',
-                    '00000000-0000-4000-8000-000000000005',
-                    '00000000-0000-4000-8000-000000000006'
-                ]
-                const supabase = createClient()
-                // Lấy 7 Deck HSK System
-                const { data: bgDecks, error } = await supabase
-                    .from('decks')
-                    .select('*')
-                    .in('id', SYSTEM_DECK_IDS)
-
-                if (bgDecks && bgDecks.length > 0) {
-                    // Do thẻ DB hệ thống rất lớn (4994 thẻ), việc join bảng Card bằng Supabase PostgREST 
-                    // có thể chậm. Tạm thời fetch số lượng thẻ cơ bản hoặc dùng Count. 
-                    const enrichedSystemDecks = await Promise.all(bgDecks.map(async (d: any) => {
-                        const { count: totalCards } = await supabase
-                            .from('cards')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('deck_id', d.id)
-
-                        // Tính toán stats dựa trên dữ liệu (shadow copy) tại máy client (nếu có)
-                        const localLearnedCards = await db.cards.where('deck_id').equals(d.id).toArray()
-
-                        const learningCards = localLearnedCards.filter(c => c.state === 'learning' || c.state === 'relearning').length
-                        const reviewCards = localLearnedCards.filter(c => c.state === 'review' && c.due && c.due <= new Date().toISOString()).length
-                        const newCards = (totalCards || 0) - localLearnedCards.length + localLearnedCards.filter(c => c.state === 'new').length
-
-                        return {
-                            ...d,
-                            displayName: d.name,
-                            parentDeck: "System Data",
-                            tags: ["HSK", "Audio", "Image"],
-                            stats: {
-                                total: totalCards || 0,
-                                new: newCards,
-                                learning: learningCards,
-                                review: reviewCards,
-                                dueTotal: newCards + learningCards + reviewCards
-                            },
-                            isSystem: true
-                        }
-                    }))
-                    setSystemDecks(enrichedSystemDecks)
-                }
-            } catch (err) {
-                console.error("Lỗi khi fetch System Data", err)
-            } finally {
-                setIsLoading(false)
-            }
-        }
-        fetchSystemDecks()
-    }, [])
 
     // Auto-seed database if empty
     useEffect(() => {
@@ -169,7 +106,7 @@ export default function DashboardContent() {
         }
     }, [])
 
-    const mergedDecks = [...systemDecks, ...(decksWithStats || [])]
+    const mergedDecks = decksWithStats || []
 
     // Tính thống kê từ review_logs
     const studyStats = useLiveQuery(async () => {
@@ -420,13 +357,13 @@ export default function DashboardContent() {
                             </CardContent>
                             <CardFooter className="pt-4 border-t bg-muted/10 gap-2">
                                 {deck.stats.review > 0 || deck.stats.learning > 0 ? (
-                                    <Link href={`/study/${deck.id}?mode=flashcard${deck.isSystem ? '&isSystem=true' : ''}`} className="w-full">
+                                    <Link href={`/study/${deck.id}?mode=flashcard`} className="w-full">
                                         <Button className="w-full shadow-sm bg-orange-500 hover:bg-orange-600 text-white border-none font-semibold">
                                             <Flame className="w-4 h-4 mr-2" /> Ôn Ngay {deck.stats.review === 0 && deck.stats.learning > 0 ? '(Đang học)' : `${deck.stats.review} Thẻ`}
                                         </Button>
                                     </Link>
                                 ) : deck.stats.new > 0 ? (
-                                    <Link href={`/study/${deck.id}?mode=flashcard${deck.isSystem ? '&isSystem=true' : ''}`} className="w-full">
+                                    <Link href={`/study/${deck.id}?mode=flashcard`} className="w-full">
                                         <Button className="w-full shadow-sm font-semibold" variant="default">
                                             Học Thẻ Mới
                                         </Button>

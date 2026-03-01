@@ -26,7 +26,6 @@ function StudyPageContent() {
 
     const deckId = params.deckId as string
     const mode = searchParams.get('mode') || 'flashcard'
-    const isSystem = searchParams.get('isSystem') === 'true'
 
     const [cards, setCards] = useState<any[]>([])
     const [allDueCards, setAllDueCards] = useState<any[]>([])
@@ -160,33 +159,15 @@ function StudyPageContent() {
                 const now = new Date().toISOString()
                 let dueCards: any[] = []
 
-                if (isSystem) {
-                    // Chế độ Remote Database cho HSK System Decks
-                    // Vì System DB áp dụng chung cho mọi user, trạng thái Review sẽ phải load từ bảng riêng `learning_logs` 
-                    // Tạm thời Load thẻ New (lấy 1000 thẻ ngẫu nhiên làm quỹ bài học)
-                    const { data: dbCards, error } = await supabase
-                        .from('cards')
-                        .select('*')
-                        .eq('deck_id', deckId)
-                        .limit(500)
-
-                    if (dbCards) {
-                        dueCards = dbCards.map((c: any) => ({
-                            ...c,
-                            state: 'new' // Mock default
-                        }))
-                    }
-                } else {
-                    // Chế độ Offline cho User Decks
-                    const allDeckCards = await db.cards.where('deck_id').equals(deckId).toArray()
-                    // Lọc thẻ New, Learning, Review đến hạn
-                    dueCards = allDeckCards.filter(c => {
-                        if (userId && c.user_id !== userId) return false
-                        if (c.state === 'new' || c.state === 'learning' || c.state === 'relearning') return true
-                        if (c.state === 'review' && c.due && c.due <= now) return true
-                        return false
-                    })
-                }
+                // Chế độ Offline cho User Decks (Bao gồm cả bộ HSK chuẩn)
+                const allDeckCards = await db.cards.where('deck_id').equals(deckId).toArray()
+                // Lọc thẻ New, Learning, Review đến hạn
+                dueCards = allDeckCards.filter(c => {
+                    if (userId && c.user_id !== userId) return false
+                    if (c.state === 'new' || c.state === 'learning' || c.state === 'relearning') return true
+                    if (c.state === 'review' && c.due && c.due <= now) return true
+                    return false
+                })
 
                 dueCards.sort((a, b) => {
                     if (!a.due && b.due) return -1;
