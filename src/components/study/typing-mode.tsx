@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Eye, CheckCircle2, XCircle, ArrowLeftRight, Volume2 } from "lucide-react"
+import { Eye, CheckCircle2, XCircle, ArrowLeftRight, Volume2, PenSquare } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,7 @@ import { parseCardFields, getStudyPair, type StudyDirection } from "@/lib/parse-
 import { calculateNextReview, Rating, CardState } from "@/lib/fsrs/scheduler"
 import { db } from "@/lib/db/local"
 import { toast } from "sonner"
+import { SentenceComposerModal } from "./sentence-composer-modal"
 
 interface TypingModeProps {
     card: any
@@ -26,6 +27,7 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
     const [isUpdating, setIsUpdating] = useState(false)
     const [swapSides, setSwapSides] = useState(false)
+    const [showComposer, setShowComposer] = useState(false)
 
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -147,6 +149,7 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
         setInputValue("")
         setIsRevealed(false)
         setIsCorrect(null)
+        setShowComposer(false)
         onNext()
     }
 
@@ -320,13 +323,35 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
                                 </Card>
                             )}
 
-                            <Button size="lg" className="w-full h-14 text-lg bg-primary hover:bg-primary/90" onClick={handleContinue} disabled={isUpdating} autoFocus>
-                                {isUpdating ? 'Đang lưu...' : 'Tiếp tục (Enter)'}
-                            </Button>
+                            <div className="flex gap-3">
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    className="h-14 px-5 rounded-xl border-2 text-sm font-semibold flex items-center gap-2 flex-shrink-0"
+                                    onClick={() => setShowComposer(true)}
+                                    disabled={isUpdating}
+                                    title="Đặt câu với từ này"
+                                >
+                                    <PenSquare className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Đặt câu</span>
+                                </Button>
+                                <Button size="lg" className="flex-1 h-14 text-lg bg-primary hover:bg-primary/90" onClick={handleContinue} disabled={isUpdating} autoFocus>
+                                    {isUpdating ? 'Đang lưu...' : 'Tiếp tục (Enter)'}
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </div>
             </motion.div>
+
+            {/* Sentence Composer Modal */}
+            <SentenceComposerModal
+                open={showComposer}
+                onClose={() => setShowComposer(false)}
+                hanzi={parsed.hanzi || card.front_html?.replace(/<[^>]*>/g, '').trim() || ''}
+                pinyin={parsed.pinyin}
+                meaning={parsed.meaning}
+            />
         </AnimatePresence>
     )
 }

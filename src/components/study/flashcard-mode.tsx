@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CheckCircle2, XCircle, Volume2 } from "lucide-react"
+import { CheckCircle2, XCircle, Volume2, PenSquare } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AnkiHtml } from "./anki-html"
 import { calculateNextReview, Rating, CardState } from "@/lib/fsrs/scheduler"
 import { db } from "@/lib/db/local"
 import { toast } from "sonner"
+import { parseCardFields } from "@/lib/parse-card-fields"
+import { SentenceComposerModal } from "./sentence-composer-modal"
 
 interface Choice {
     html: string
@@ -27,6 +29,10 @@ interface FlashcardModeProps {
 export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt, pinyin }: FlashcardModeProps) {
     const [selectedChoice, setSelectedChoice] = useState<Choice | null>(null)
     const [isUpdating, setIsUpdating] = useState(false)
+    const [showComposer, setShowComposer] = useState(false)
+
+    // Extract parsed fields for the composer
+    const parsed = parseCardFields(card)
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -131,6 +137,7 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt, pin
     const handleContinue = () => {
         setIsUpdating(false)
         setSelectedChoice(null)
+        setShowComposer(false)
         onNext()
     }
 
@@ -232,11 +239,33 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt, pin
             </div>
 
             {/* Next Step Action */}
-            <div className={`transition-all duration-300 w-full flex justify-center ${selectedChoice ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-                <Button size="lg" className="w-full h-16 text-xl font-semibold bg-primary hover:bg-primary/90 rounded-2xl shadow-md" onClick={handleContinue} disabled={isUpdating}>
-                    {isUpdating ? 'Đang lưu...' : 'Tiếp tục (Enter)'}
-                </Button>
+            <div className={`transition-all duration-300 w-full flex flex-col gap-3 ${selectedChoice ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+                <div className="flex gap-3">
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        className="h-16 px-6 rounded-2xl border-2 text-sm font-semibold flex items-center gap-2 flex-shrink-0"
+                        onClick={() => setShowComposer(true)}
+                        disabled={isUpdating}
+                        title="Đặt câu với từ này để luyện tập thêm"
+                    >
+                        <PenSquare className="h-5 w-5" />
+                        <span className="hidden sm:inline">Đặt câu</span>
+                    </Button>
+                    <Button size="lg" className="flex-1 h-16 text-xl font-semibold bg-primary hover:bg-primary/90 rounded-2xl shadow-md" onClick={handleContinue} disabled={isUpdating}>
+                        {isUpdating ? 'Đang lưu...' : 'Tiếp tục (Enter)'}
+                    </Button>
+                </div>
             </div>
+
+            {/* Sentence Composer Modal */}
+            <SentenceComposerModal
+                open={showComposer}
+                onClose={() => setShowComposer(false)}
+                hanzi={parsed.hanzi || card.front_html?.replace(/<[^>]*>/g, '').trim() || ''}
+                pinyin={parsed.pinyin || pinyin}
+                meaning={parsed.meaning}
+            />
         </div>
     )
 }
