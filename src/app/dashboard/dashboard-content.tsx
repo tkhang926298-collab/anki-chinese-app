@@ -18,9 +18,11 @@ import {
 } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { createClient } from "@/lib/supabase/client"
+import { seedHskDatabase } from "@/lib/seed-db"
 
 export default function DashboardContent() {
     const [isLoading, setIsLoading] = useState(true)
+    const [isSeeding, setIsSeeding] = useState(false)
     const [systemDecks, setSystemDecks] = useState<any[]>([])
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -84,6 +86,27 @@ export default function DashboardContent() {
             }
         }
         fetchSystemDecks()
+    }, [])
+
+    // Auto-seed database if empty
+    useEffect(() => {
+        async function checkAndSeed() {
+            try {
+                const count = await db.decks.count()
+                if (count === 0) {
+                    setIsSeeding(true)
+                    const success = await seedHskDatabase()
+                    if (success) {
+                        toast.success("Đã tự động nạp Database HSK Chuẩn")
+                    }
+                    setIsSeeding(false)
+                }
+            } catch (err) {
+                console.error("Lỗi khi kiểm tra dữ liệu:", err)
+                setIsSeeding(false)
+            }
+        }
+        checkAndSeed()
     }, [])
 
     // Using IndexedDB and live query
@@ -199,6 +222,16 @@ export default function DashboardContent() {
         return (
             <div className="container py-10 flex justify-center items-center h-[50vh]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        )
+    }
+
+    if (isSeeding) {
+        return (
+            <div className="container py-10 flex flex-col justify-center items-center h-[60vh] space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-emerald-500"></div>
+                <h2 className="text-xl font-bold text-foreground">Đang thiết lập Database Hệ Thống...</h2>
+                <p className="text-muted-foreground">Đang nạp 11.474 từ vựng HSK. Vui lòng chờ trong giây lát.</p>
             </div>
         )
     }
