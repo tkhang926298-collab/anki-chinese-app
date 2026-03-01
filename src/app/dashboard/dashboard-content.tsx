@@ -81,92 +81,111 @@ export default function DashboardContent() {
 
     // Using IndexedDB and live query
     const decksWithStats = useLiveQuery(async () => {
-        const allDecks = await db.decks.toArray()
-        const now = new Date().toISOString()
+        try {
+            const allDecks = await db.decks.toArray()
+            const now = new Date().toISOString()
 
-        const result = await Promise.all(allDecks.map(async (deck) => {
-            const cards = await db.cards.where('deck_id').equals(deck.id).toArray()
+            const result = await Promise.all(allDecks.map(async (deck) => {
+                const cards = await db.cards.where('deck_id').equals(deck.id).toArray()
 
-            const newCards = cards.filter(c => c.state === 'new').length
-            const learningCards = cards.filter(c => c.state === 'learning' || c.state === 'relearning').length
-            const reviewCards = cards.filter(c => c.state === 'review' && c.due && c.due <= now).length
+                const newCards = cards.filter(c => c.state === 'new').length
+                const learningCards = cards.filter(c => c.state === 'learning' || c.state === 'relearning').length
+                const reviewCards = cards.filter(c => c.state === 'review' && c.due && c.due <= now).length
 
-            // Thống kê toàn bộ tags có trong Deck này
-            const allTags = cards.flatMap(c => (c as any).tags || [])
-            const uniqueTags = Array.from(new Set(allTags)).slice(0, 5) // Hiển thị tối đa 5 tag phổ biến
+                // Thống kê toàn bộ tags có trong Deck này
+                const allTags = cards.flatMap(c => (c as any).tags || [])
+                const uniqueTags = Array.from(new Set(allTags)).slice(0, 5) // Hiển thị tối đa 5 tag phổ biến
 
-            // Bóc tách tên Subdeck nếu có (thường chứa ký hiệu '::' vd: Core::HSK1)
-            // Lọc các ký tự Unicode Control (tab, newlines, Record/Unit Separators - hiển thị thành ô vuông lỗi font) thành ' 〉 ' để tránh hỏng UI
-            let cleanDeckName = deck.name.replace(/[\x00-\x1F\x7F-\x9F]/g, ' 〉 ')
+                // Bóc tách tên Subdeck nếu có (thường chứa ký hiệu '::' vd: Core::HSK1)
+                // Lọc các ký tự Unicode Control (tab, newlines, Record/Unit Separators - hiển thị thành ô vuông lỗi font) thành ' 〉 ' để tránh hỏng UI
+                let cleanDeckName = deck.name.replace(/[\x00-\x1F\x7F-\x9F]/g, ' 〉 ')
 
-            let displayName = cleanDeckName
-            let parentDeck = null
+                let displayName = cleanDeckName
+                let parentDeck = null
 
-            if (cleanDeckName.includes('::')) {
-                const parts = cleanDeckName.split('::')
-                displayName = parts[parts.length - 1] // Lấy tên thật (phần cuối)
-                parentDeck = parts.slice(0, parts.length - 1).join(' 〉') // Tên bộ cha
-            } else if (cleanDeckName.includes(' 〉 ')) {
-                // Trường hợp Deck tách bằng Control Characters (đã fix ở regex trên)
-                const parts = cleanDeckName.split(' 〉 ')
-                displayName = parts[parts.length - 1]
-                parentDeck = parts.slice(0, parts.length - 1).join(' 〉')
-            }
+                if (cleanDeckName.includes('::')) {
+                    const parts = cleanDeckName.split('::')
+                    displayName = parts[parts.length - 1] // Lấy tên thật (phần cuối)
+                    parentDeck = parts.slice(0, parts.length - 1).join(' 〉') // Tên bộ cha
+                } else if (cleanDeckName.includes(' 〉 ')) {
+                    // Trường hợp Deck tách bằng Control Characters (đã fix ở regex trên)
+                    const parts = cleanDeckName.split(' 〉 ')
+                    displayName = parts[parts.length - 1]
+                    parentDeck = parts.slice(0, parts.length - 1).join(' 〉')
+                }
 
-            return {
-                ...deck,
-                displayName,
-                parentDeck,
-                tags: uniqueTags,
-                stats: {
-                    total: cards.length,
-                    new: newCards,
-                    learning: learningCards,
-                    review: reviewCards,
-                    dueTotal: newCards + learningCards + reviewCards
-                },
-                isSystem: false
-            }
-        }))
+                return {
+                    ...deck,
+                    displayName,
+                    parentDeck,
+                    tags: uniqueTags,
+                    stats: {
+                        total: cards.length,
+                        new: newCards,
+                        learning: learningCards,
+                        review: reviewCards,
+                        dueTotal: newCards + learningCards + reviewCards
+                    },
+                    isSystem: false
+                }
+            }))
 
-        // Sắp xếp danh sách Deck theo thứ tự bảng chữ cái (Alpha-Numeric sort)
-        // Dùng `numeric: true` để đảm bảo "Bài 2" đứng trước "Bài 10" một cách thông minh
-        return result.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }))
+            // Sắp xếp danh sách Deck theo thứ tự bảng chữ cái (Alpha-Numeric sort)
+            // Dùng `numeric: true` để đảm bảo "Bài 2" đứng trước "Bài 10" một cách thông minh
+            return result.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }))
+        } catch (err) {
+            console.error("Error loading local decks:", err)
+            return []
+        }
     }, [])
 
     const mergedDecks = [...systemDecks, ...(decksWithStats || [])]
 
     // Tính thống kê từ review_logs
     const studyStats = useLiveQuery(async () => {
-        const now = new Date();
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        try {
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
 
-        // Đếm số reviews hôm nay
-        const todayReviews = await db.review_logs.where('review').aboveOrEqual(todayStart).count();
-
-        // Tính streak: đếm số ngày liên tiếp có review
-        const allLogs = await db.review_logs.orderBy('review').reverse().toArray();
-        let streak = 0;
-        if (todayReviews > 0) streak = 1;
-
-        const checkedDays = new Set<string>();
-        for (const log of allLogs) {
-            const day = new Date(log.review).toDateString();
-            checkedDays.add(day);
-        }
-
-        // Đếm ngược từ hôm nay
-        for (let i = todayReviews > 0 ? 1 : 0; i < 365; i++) {
-            const checkDate = new Date(now);
-            checkDate.setDate(checkDate.getDate() - i);
-            if (checkedDays.has(checkDate.toDateString())) {
-                if (i > 0 || todayReviews > 0) streak = i + 1;
-            } else {
-                break;
+            // Đếm số reviews hôm nay
+            let todayReviews = 0;
+            let allLogs: any[] = [];
+            try {
+                todayReviews = await db.review_logs.where('review').aboveOrEqual(todayStart).count();
+                allLogs = await db.review_logs.orderBy('review').reverse().toArray();
+            } catch {
+                // Fallback: full table scan nếu index chưa sẵn sàng
+                allLogs = await db.review_logs.toArray();
+                todayReviews = allLogs.filter(l => l.review >= todayStart).length;
+                allLogs.sort((a, b) => (b.review || '').localeCompare(a.review || ''));
             }
-        }
 
-        return { todayReviews, streak };
+            // Tính streak: đếm số ngày liên tiếp có review
+            let streak = 0;
+            if (todayReviews > 0) streak = 1;
+
+            const checkedDays = new Set<string>();
+            for (const log of allLogs) {
+                const day = new Date(log.review).toDateString();
+                checkedDays.add(day);
+            }
+
+            // Đếm ngược từ hôm nay
+            for (let i = todayReviews > 0 ? 1 : 0; i < 365; i++) {
+                const checkDate = new Date(now);
+                checkDate.setDate(checkDate.getDate() - i);
+                if (checkedDays.has(checkDate.toDateString())) {
+                    if (i > 0 || todayReviews > 0) streak = i + 1;
+                } else {
+                    break;
+                }
+            }
+
+            return { todayReviews, streak };
+        } catch (err) {
+            console.error("Error loading study stats:", err);
+            return { todayReviews: 0, streak: 0 };
+        }
     }, []) || { todayReviews: 0, streak: 0 }
 
     if (isLoading && !decksWithStats) {

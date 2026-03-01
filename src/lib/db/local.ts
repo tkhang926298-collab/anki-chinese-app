@@ -19,12 +19,12 @@ export class AnkiDatabase extends Dexie {
 
     constructor() {
         super('AnkiChineseLocalDB');
-        this.version(2).stores({
+        this.version(3).stores({
             // Primary key and indexed props
             profiles: 'id',
             decks: 'id, user_id, created_at',
             cards: 'id, deck_id, user_id, state, due',
-            review_logs: 'id, card_id, user_id',
+            review_logs: 'id, card_id, user_id, review',
             media: 'id'
         });
     }
