@@ -3,6 +3,7 @@
     "main": ".open-next/worker.js",
     "name": "anki-chinese-app",
     "compatibility_date": "2024-12-30",
+    "keep_names": false,
     "compatibility_flags": [
         "nodejs_compat"
     ],
