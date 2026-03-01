@@ -26,6 +26,9 @@ export default function ImportContent() {
     const [quizletDeckName, setQuizletDeckName] = useState('')
     const [isImportingQuizlet, setIsImportingQuizlet] = useState(false)
 
+    // HSK DB Import states
+    const [isImportingHSK, setIsImportingHSK] = useState(false)
+
     // Xử lý nạp file
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -411,7 +414,120 @@ export default function ImportContent() {
                     </Button>
                 </CardFooter>
             </Card>
+
+            {/* Section 3: Built-in HSK Database */}
+            <h2 className="text-xl font-semibold mt-10 mb-3">📚 Cài đặt Dữ liệu HSK Chuẩn (Từ vựng HSK 1-6)</h2>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Nạp Bộ HSK 1-6 Chuẩn</CardTitle>
+                    <CardDescription>
+                        Bộ dữ liệu 11.000+ từ vựng tiếng Trung HSK 1-6 được tích hợp sẵn. Bao gồm Chữ Hán, Pinyin, Nghĩa tiếng Việt và câu ví dụ minh họa.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                        Hệ thống sẽ tải file dữ liệu chuẩn và tự động phân loại thành các bộ từ vựng theo cấp độ HSK (HSK 1, HSK 2, ...).
+                    </p>
+                </CardContent>
+                <CardFooter className="border-t py-4">
+                    <Button
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                        disabled={isImportingHSK}
+                        onClick={async () => {
+                            setIsImportingHSK(true)
+                            try {
+                                const { data: { user } } = await supabase.auth.getUser()
+                                const userId = user?.id || 'offline-user-local'
+                                const now = new Date().toISOString()
+
+                                toast.loading("Đang tải dữ liệu HSK...", { id: "hsk-import" })
+
+                                const res = await fetch('/hsk_database.json')
+                                if (!res.ok) throw new Error("Không thể tải file dữ liệu HSK")
+                                const hskData = await res.json()
+
+                                toast.loading(`Đang xử lý ${hskData.length} từ vựng...`, { id: "hsk-import" })
+
+                                // Group by deck (HSK 1, HSK 2...)
+                                const decksMap = new Map<string, any[]>()
+                                for (const item of hskData) {
+                                    const deckName = item.deck || "HSK Khác"
+                                    if (!decksMap.has(deckName)) {
+                                        decksMap.set(deckName, [])
+                                    }
+                                    decksMap.get(deckName)!.push(item)
+                                }
+
+                                let totalInserted = 0;
+
+                                for (const [deckName, items] of decksMap.entries()) {
+                                    const deckId = crypto.randomUUID()
+                                    await db.decks.add({
+                                        id: deckId,
+                                        user_id: userId,
+                                        name: `[Chuẩn] Từ vựng ${deckName}`,
+                                        description: `Bộ từ vựng HSK chuẩn trích xuất từ file Excel gốc. Import ngày: ${new Date().toLocaleDateString()}`,
+                                        created_at: now,
+                                        last_reviewed: null
+                                    })
+
+                                    const cards = items.map(item => {
+                                        let frontHtml = `<div class="text-4xl font-bold mb-4 text-center">${item.hanzi}</div>`
+                                        if (item.example) {
+                                            frontHtml += `<div class="text-sm text-muted-foreground mt-4 text-center italic border-t pt-2">${item.example.sentence_hanzi}</div>`
+                                        }
+
+                                        let backHtml = `<div class="text-2xl text-primary text-center mb-2">${item.pinyin}</div>`
+                                        backHtml += `<div class="text-lg text-center dark:text-zinc-300 font-medium">${item.meaning}</div>`
+                                        if (item.example) {
+                                            backHtml += `<div class="mt-4 pt-4 border-t text-sm text-center">`
+                                            if (item.example.sentence_pinyin) backHtml += `<div class="text-xs text-muted-foreground mb-1">${item.example.sentence_pinyin}</div>`
+                                            if (item.example.sentence_meaning) backHtml += `<div class="italic text-foreground/80">${item.example.sentence_meaning}</div>`
+                                            backHtml += `</div>`
+                                        }
+
+                                        return {
+                                            id: crypto.randomUUID(),
+                                            deck_id: deckId,
+                                            user_id: userId,
+                                            front_html: frontHtml,
+                                            back_html: backHtml,
+                                            fields: item,
+                                            tags: [deckName],
+                                            state: 'new' as const,
+                                            due: null,
+                                            reps: 0,
+                                            lapses: 0,
+                                            stability: 0,
+                                            difficulty: 4.5,
+                                            elapsed_days: 0,
+                                            scheduled_days: 0,
+                                            created_at: now,
+                                            last_review: null
+                                        }
+                                    })
+
+                                    await db.cards.bulkAdd(cards)
+                                    totalInserted += cards.length
+                                }
+
+                                toast.success(`Cài đặt thành công ${totalInserted} từ vựng từ ${decksMap.size} bộ HSK chuẩn!`, { id: "hsk-import" })
+                                router.push('/dashboard')
+                            } catch (err: any) {
+                                toast.error(`Lỗi: ${err.message}`, { id: "hsk-import" })
+                            } finally {
+                                setIsImportingHSK(false)
+                            }
+                        }}
+                    >
+                        {isImportingHSK ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang cài đặt dữ liệu...</>
+                        ) : (
+                            <><CheckCircle className="mr-2 h-4 w-4" /> Cài đặt Bộ HSK Chuẩn ngay</>
+                        )}
+                    </Button>
+                </CardFooter>
+            </Card>
         </div>
     )
 }
-
