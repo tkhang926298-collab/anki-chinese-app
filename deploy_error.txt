@@ -1,0 +1,44 @@
+
+┌──────────────────────────────┐
+│ OpenNext — Cloudflare deploy │
+└──────────────────────────────┘
+
+WARN OpenNext is not fully compatible with Windows.
+WARN For optimal performance, it is recommended to use Windows Subsystem for Linux (WSL).
+WARN While OpenNext may function on Windows, it could encounter unpredictable failures during runtime.
+Incremental cache does not need populating
+Tag cache does not need populating
+
+ ⛅️ wrangler 4.69.0
+───────────────────
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mA file or directory could not be found.[0m
+
+  
+  Missing file or directory: D:\Tu moi tieng trung\anki-chinese-app\.wrangler\tmp\deploy-b497sN\77d9faebf7af9e421806970ce10a58e9d83116d7-resvg.wasm?module
+  
+  This is typically caused by:
+    - The file or directory does not exist
+    - A typo in the file path
+    - The file was moved or deleted
+  
+  Please check the file path and try again.
+
+
+🪵  Logs were written to "C:\Users\tuans\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-03-01_13-28-55_790.log"
+ERROR Wrangler deploy command failed:
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mA file or directory could not be found.[0m
+
+  
+  Missing file or directory: D:\Tu moi tieng trung\anki-chinese-app\.wrangler\tmp\deploy-b497sN\77d9faebf7af9e421806970ce10a58e9d83116d7-resvg.wasm?module
+  
+  This is typically caused by:
+    - The file or directory does not exist
+    - A typo in the file path
+    - The file was moved or deleted
+  
+  Please check the file path and try again.
+
+
+🪵  Logs were written to "C:\Users\tuans\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-03-01_13-28-55_790.log"
+

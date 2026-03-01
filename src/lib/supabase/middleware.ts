@@ -34,12 +34,14 @@ export async function updateSession(request: NextRequest) {
 
     // protected routes
     const isAuthPage = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register')
+
     if (!user && !isAuthPage && request.nextUrl.pathname !== '/') {
         // redirect unauthenticated users to login page
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         return NextResponse.redirect(url)
     }
+
 
     if (user && isAuthPage) {
         // redirect authenticated users away from login

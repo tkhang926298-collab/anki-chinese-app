@@ -79,7 +79,7 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt }: F
 
             const nextState = calculateNextReview(currentState, rating)
 
-            // Update Card
+            // Update Card: Check if it exists (for System Decks shadow copy)
             const cardUpdateData: any = {
                 state: nextState.state,
                 due: nextState.due,
@@ -92,7 +92,12 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt }: F
                 last_review: nextState.last_review
             };
 
-            await db.cards.update(card.id, cardUpdateData)
+            const existingCard = await db.cards.get(card.id)
+            if (existingCard) {
+                await db.cards.update(card.id, cardUpdateData)
+            } else {
+                await db.cards.add({ ...card, ...cardUpdateData })
+            }
 
             // Insert Log
             const logInsertData: any = {

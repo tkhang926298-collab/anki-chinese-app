@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { BookOpen, Clock, Plus, Target, TrendingUp, UploadCloud, Trash2, Tag, Flame, Search } from "lucide-react"
+import { BookOpen, Clock, Plus, Target, TrendingUp, UploadCloud, Trash2, Tag, Flame, Search, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { useLiveQuery } from "dexie-react-hooks"
@@ -53,6 +53,13 @@ export default function DashboardContent() {
                             .select('*', { count: 'exact', head: true })
                             .eq('deck_id', d.id)
 
+                        // Tính toán stats dựa trên dữ liệu (shadow copy) tại máy client (nếu có)
+                        const localLearnedCards = await db.cards.where('deck_id').equals(d.id).toArray()
+
+                        const learningCards = localLearnedCards.filter(c => c.state === 'learning' || c.state === 'relearning').length
+                        const reviewCards = localLearnedCards.filter(c => c.state === 'review' && c.due && c.due <= new Date().toISOString()).length
+                        const newCards = (totalCards || 0) - localLearnedCards.length + localLearnedCards.filter(c => c.state === 'new').length
+
                         return {
                             ...d,
                             displayName: d.name,
@@ -60,10 +67,10 @@ export default function DashboardContent() {
                             tags: ["HSK", "Audio", "Image"],
                             stats: {
                                 total: totalCards || 0,
-                                new: totalCards || 0, // Tất cả thẻ bắt đầu bằng New
-                                learning: 0,
-                                review: 0,
-                                dueTotal: totalCards || 0
+                                new: newCards,
+                                learning: learningCards,
+                                review: reviewCards,
+                                dueTotal: newCards + learningCards + reviewCards
                             },
                             isSystem: true
                         }
@@ -344,35 +351,60 @@ export default function DashboardContent() {
                             </CardHeader>
                             <CardContent className="flex-1 pt-4">
                                 <div className="space-y-4">
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-muted-foreground">Tổng số thẻ:</span>
-                                        <span className="font-medium bg-muted px-2 py-0.5 rounded">{deck.stats.total}</span>
+                                    <div className="flex justify-between items-center text-sm font-medium">
+                                        <span className="text-muted-foreground">Tiến độ ({deck.stats.total - deck.stats.new}/{deck.stats.total})</span>
+                                        <span className="text-primary">
+                                            {deck.stats.total > 0 ? Math.round(((deck.stats.total - deck.stats.new) / deck.stats.total) * 100) : 0}%
+                                        </span>
                                     </div>
+                                    {/* Assuming Progress component is defined elsewhere */}
+                                    <Progress
+                                        value={deck.stats.total > 0 ? ((deck.stats.total - deck.stats.new) / deck.stats.total) * 100 : 0}
+                                        className="h-2 bg-muted/50"
+                                    />
 
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-blue-600 font-medium">Mới: {deck.stats.new}</span>
-                                            <span className="text-orange-600 font-medium">Đang học: {deck.stats.learning}</span>
-                                            <span className="text-emerald-600 font-medium">Ôn tập: {deck.stats.review}</span>
+                                    <div className="flex justify-between text-xs pt-2">
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="flex items-center gap-1.5 text-emerald-600 font-medium bg-emerald-500/10 px-2 py-1 rounded-md">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Đã thuộc
+                                            </div>
+                                            <span className="font-bold text-sm text-foreground">{deck.stats.total - deck.stats.new - deck.stats.learning}</span>
                                         </div>
-                                        <Progress
-                                            value={deck.stats.total === 0 ? 0 : ((deck.stats.total - deck.stats.dueTotal) / deck.stats.total) * 100}
-                                            className="h-2"
-                                        />
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="flex items-center gap-1.5 text-amber-600 font-medium bg-amber-500/10 px-2 py-1 rounded-md">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> Đang học
+                                            </div>
+                                            <span className="font-bold text-sm text-foreground">{deck.stats.learning}</span>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="flex items-center gap-1.5 text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-md">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30"></div> Chưa học
+                                            </div>
+                                            <span className="font-bold text-sm text-foreground">{deck.stats.new}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>
-                            <CardFooter className="pt-4 border-t gap-2 bg-muted/20">
-                                <Link href={`/study/${deck.id}?mode=flashcard${deck.isSystem ? '&isSystem=true' : ''}`} className="w-1/2">
-                                    <Button className="w-full shadow-sm" variant={deck.stats.dueTotal > 0 ? "default" : "secondary"}>
-                                        Ôn Thẻ
-                                    </Button>
-                                </Link>
-                                <Link href={`/study/${deck.id}?mode=typing${deck.isSystem ? '&isSystem=true' : ''}`} className="w-1/2">
-                                    <Button className="w-full shadow-sm" variant="outline">
-                                        Luyện Gõ
-                                    </Button>
-                                </Link>
+                            <CardFooter className="pt-4 border-t bg-muted/10 gap-2">
+                                {deck.stats.review > 0 || deck.stats.learning > 0 ? (
+                                    <Link href={`/study/${deck.id}?mode=flashcard${deck.isSystem ? '&isSystem=true' : ''}`} className="w-full">
+                                        <Button className="w-full shadow-sm bg-orange-500 hover:bg-orange-600 text-white border-none font-semibold">
+                                            <Flame className="w-4 h-4 mr-2" /> Ôn Ngay {deck.stats.review === 0 && deck.stats.learning > 0 ? '(Đang học)' : `${deck.stats.review} Thẻ`}
+                                        </Button>
+                                    </Link>
+                                ) : deck.stats.new > 0 ? (
+                                    <Link href={`/study/${deck.id}?mode=flashcard${deck.isSystem ? '&isSystem=true' : ''}`} className="w-full">
+                                        <Button className="w-full shadow-sm font-semibold" variant="default">
+                                            Học Thẻ Mới
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <div className="w-full">
+                                        <Button className="w-full shadow-none bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 font-semibold" variant="secondary" disabled>
+                                            <CheckCircle2 className="w-4 h-4 mr-2" /> Đã Hoàn Thành 🎉
+                                        </Button>
+                                    </div>
+                                )}
                             </CardFooter>
                         </Card>
                     ))}
