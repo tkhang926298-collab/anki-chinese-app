@@ -59,6 +59,12 @@ export function Header() {
                             >
                                 Import Deck
                             </Link>
+                            <Link
+                                href="/dictionary"
+                                className="transition-colors hover:text-foreground/80 text-foreground/60"
+                            >
+                                Tra Cứu
+                            </Link>
                         </nav>
                     )}
                 </div>
