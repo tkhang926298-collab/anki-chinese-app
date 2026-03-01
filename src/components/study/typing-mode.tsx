@@ -230,6 +230,9 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
                             return (
                                 <div className={`min-h-full w-full flex flex-col ${isSuperLong ? 'justify-start' : 'justify-center'}`}>
                                     <AnkiHtml className={`${sizeClass} ${layoutClass} font-medium text-foreground w-full leading-relaxed font-chinese break-words`} html={cleanHtml} />
+                                    {!swapSides && parsed.pinyin && (
+                                        <p className="text-lg sm:text-xl text-muted-foreground italic mt-3 text-center">{parsed.pinyin}</p>
+                                    )}
                                 </div>
                             )
                         })()}
@@ -285,6 +288,9 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
                                         <div>
                                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-2 block">Đáp án đúng</span>
                                             <div className="text-3xl sm:text-4xl font-medium text-foreground font-chinese">{targetAnswer}</div>
+                                            {swapSides && parsed.pinyin && (
+                                                <p className="text-base text-muted-foreground italic mt-1">{parsed.pinyin}</p>
+                                            )}
                                         </div>
                                         <div>
                                             <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-2 block">Bạn đã nói</span>
@@ -306,6 +312,9 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
                                             <h4 className="text-lg font-bold text-emerald-700 dark:text-emerald-400">Xuất sắc!</h4>
                                             <p className="text-emerald-600/80 dark:text-emerald-500 text-sm mb-2">Bạn đã gõ chính xác định nghĩa này.</p>
                                             <div className="text-xl sm:text-2xl font-medium text-foreground font-chinese opacity-80">{targetAnswer}</div>
+                                            {swapSides && parsed.pinyin && (
+                                                <p className="text-base text-muted-foreground italic mt-1">{parsed.pinyin}</p>
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>

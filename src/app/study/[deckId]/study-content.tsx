@@ -74,6 +74,12 @@ function StudyPageContent() {
             return parsed.hanzi || card.front_html?.replace(/<[^>]*>/g, '').trim() || "";
         };
 
+        const getCardPinyin = (card: any): string => {
+            if (!card) return "";
+            const parsed = parseCardFields(card);
+            return parsed.pinyin || "";
+        };
+
         // Đảo chiều: khi swap thì choices = Hanzi, câu hỏi = Meaning
         if (configSwap) {
             const correctHanzi = getCardHanzi(currentCard);
@@ -81,7 +87,7 @@ function StudyPageContent() {
 
             const pool = allDueCards.filter((c: any) => c.id !== currentCard.id);
             const shuffled = [...pool].sort(() => Math.random() - 0.5);
-            const distractors: { html: string; isCorrect: boolean }[] = [];
+            const distractors: { html: string; isCorrect: boolean; pinyin?: string }[] = [];
             const usedHanzi = new Set<string>([correctHanzi]);
 
             for (const c of shuffled) {
@@ -89,12 +95,12 @@ function StudyPageContent() {
                 const hanzi = getCardHanzi(c);
                 if (!hanzi || usedHanzi.has(hanzi)) continue;
                 usedHanzi.add(hanzi);
-                distractors.push({ html: hanzi, isCorrect: false });
+                distractors.push({ html: hanzi, isCorrect: false, pinyin: getCardPinyin(c) });
             }
             while (distractors.length < 3) {
-                distractors.push({ html: ["其他", "不对", "别的"][distractors.length] || "错", isCorrect: false });
+                distractors.push({ html: ["其他", "不对", "别的"][distractors.length] || "错", isCorrect: false, pinyin: "" });
             }
-            return [{ html: correctHanzi, isCorrect: true }, ...distractors].sort(() => Math.random() - 0.5);
+            return [{ html: correctHanzi, isCorrect: true, pinyin: getCardPinyin(currentCard) }, ...distractors].sort(() => Math.random() - 0.5);
         }
 
         // Chiều bình thường: choices = Meaning
@@ -105,7 +111,7 @@ function StudyPageContent() {
         }
         const pool = allDueCards.filter((c: any) => c.id !== currentCard.id);
         const shuffled = [...pool].sort(() => Math.random() - 0.5);
-        const distractors: { html: string; isCorrect: boolean }[] = [];
+        const distractors: { html: string; isCorrect: boolean; pinyin?: string }[] = [];
         const usedMeanings = new Set<string>(correctMeaning ? [correctMeaning.toLowerCase()] : []);
 
         for (const card of shuffled) {
@@ -136,6 +142,12 @@ function StudyPageContent() {
         const meaning = parsed.meaning || "";
         const pinyin = parsed.pinyin || "";
         return { meaning, pinyin };
+    }, [currentCard, configSwap])
+
+    // Pinyin cho thẻ chính (chiều bình thường: 字→🇻🇳)
+    const currentPinyin = useMemo(() => {
+        if (!currentCard || configSwap) return "";
+        return parseCardFields(currentCard).pinyin || "";
     }, [currentCard, configSwap])
 
     // Load cards due for today
@@ -412,6 +424,7 @@ function StudyPageContent() {
                         onNext={handleNextCard}
                         onResult={handleResult}
                         swapPrompt={swappedPrompt}
+                        pinyin={currentPinyin}
                     />
                 )}
             </div>

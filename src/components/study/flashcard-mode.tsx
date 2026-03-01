@@ -12,6 +12,7 @@ import { toast } from "sonner"
 interface Choice {
     html: string
     isCorrect: boolean
+    pinyin?: string
 }
 
 interface FlashcardModeProps {
@@ -20,9 +21,10 @@ interface FlashcardModeProps {
     onNext: () => void
     onResult?: (isCorrect: boolean) => void
     swapPrompt?: { meaning: string; pinyin: string } | null
+    pinyin?: string
 }
 
-export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt }: FlashcardModeProps) {
+export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt, pinyin }: FlashcardModeProps) {
     const [selectedChoice, setSelectedChoice] = useState<Choice | null>(null)
     const [isUpdating, setIsUpdating] = useState(false)
 
@@ -166,7 +168,10 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt }: F
                             {swapPrompt.pinyin && <p className="text-xl text-muted-foreground italic">{swapPrompt.pinyin}</p>}
                         </div>
                     ) : (
-                        <AnkiHtml className="text-5xl sm:text-6xl lg:text-7xl font-medium text-foreground w-full leading-tight font-chinese" html={card.front_html} />
+                        <div className="space-y-3 w-full">
+                            <AnkiHtml className="text-5xl sm:text-6xl lg:text-7xl font-medium text-foreground w-full leading-tight font-chinese" html={card.front_html} />
+                            {pinyin && <p className="text-lg sm:text-xl text-muted-foreground italic">{pinyin}</p>}
+                        </div>
                     )}
                 </CardContent>
                 <div className="w-full mt-auto"></div>
@@ -201,9 +206,14 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt }: F
                                 <span className="flex items-center justify-center w-8 h-8 rounded-md bg-muted/50 text-muted-foreground font-mono text-sm font-bold border shrink-0">
                                     {idx + 1}
                                 </span>
-                                <span className={`font-medium leading-relaxed block ${swapPrompt ? 'text-3xl sm:text-4xl font-chinese' : 'text-xl sm:text-2xl'}`}>
-                                    {choice.html}
-                                </span>
+                                <div className="flex flex-col">
+                                    <span className={`font-medium leading-relaxed block ${swapPrompt ? 'text-3xl sm:text-4xl font-chinese' : 'text-xl sm:text-2xl'}`}>
+                                        {choice.html}
+                                    </span>
+                                    {choice.pinyin && (
+                                        <span className="text-sm text-muted-foreground italic mt-1">{choice.pinyin}</span>
+                                    )}
+                                </div>
                             </div>
 
                             {selectedChoice && choice.isCorrect && (
