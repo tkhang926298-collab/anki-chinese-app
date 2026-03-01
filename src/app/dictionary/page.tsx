@@ -11,11 +11,6 @@ export const metadata = {
 export default function DictionaryPage() {
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
-            <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_100%_0%,rgba(120,119,198,0.1),transparent_50%)]"></div>
-                <div className="absolute bottom-0 left-0 w-full h-full bg-[radial-gradient(circle_at_0%_100%,rgba(74,222,128,0.05),transparent_50%)]"></div>
-            </div>
-
             <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
                 <div className="container flex h-16 items-center px-4 mx-auto max-w-5xl justify-between">
                     <div className="flex items-center gap-4">

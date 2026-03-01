@@ -45,18 +45,39 @@ export function LoginForm() {
     async function onSubmit(data: z.infer<typeof loginSchema>) {
         setIsLoading(true)
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: authData, error } = await supabase.auth.signInWithPassword({
             email: data.email,
             password: data.password,
         })
 
-        setIsLoading(false)
-
         if (error) {
+            setIsLoading(false)
             return toast.error("Đăng nhập thất bại", {
                 description: error.message,
             })
         }
+
+        // Kiểm tra quyền Admin
+        const user = authData.user;
+        if (user) {
+            const createdAt = new Date(user.created_at).getTime();
+            const cutoffDate = new Date('2026-03-02T00:00:00').getTime();
+
+            // Nếu tài khoản tạo MỚI SAU mốc thời gian này thì bắt buộc phải có `is_approved = true`
+            if (createdAt > cutoffDate) {
+                const isApproved = user.user_metadata?.is_approved === true;
+
+                if (!isApproved) {
+                    await supabase.auth.signOut();
+                    setIsLoading(false)
+                    return toast.error("Đăng nhập bị từ chối", {
+                        description: "Tài khoản của bạn chưa được Admin phê duyệt. Vui lòng liên hệ Admin.",
+                    })
+                }
+            }
+        }
+
+        setIsLoading(false)
 
         toast.success("Đăng nhập thành công!", {
             description: "Đang chuyển hướng đến Dashboard...",

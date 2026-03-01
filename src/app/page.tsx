@@ -5,11 +5,6 @@ import { BookOpen, BrainCircuit, Globe, Zap, ArrowRight, Sparkles } from "lucide
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background relative overflow-hidden">
-      {/* Background Gradients */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse"></div>
-      <div className="absolute top-0 -right-4 w-72 h-72 bg-secondary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse animation-delay-2000"></div>
-      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-accent/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse animation-delay-4000"></div>
-
       <main className="flex-1 relative z-10">
         <section className="w-full py-20 lg:py-40">
           <div className="container px-4 md:px-6 relative">
