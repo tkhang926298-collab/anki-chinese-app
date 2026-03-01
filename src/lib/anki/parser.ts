@@ -5,7 +5,8 @@ import { decompress } from 'fzstd'
 export interface ParsedCard {
     front_html: string
     back_html: string
-    fields: string[]
+    fields: any  // string[] (raw) or Record<string, string> (named) or both via namedFields
+    namedFields?: Record<string, string>  // fieldName -> value mapping (when available)
     tags?: string[]
 }
 
@@ -272,6 +273,7 @@ export async function parseApkgFile(file: File): Promise<ParsedDeck[]> {
                             front_html: front_html.trim() !== '' ? front_html : 'Thẻ trống',
                             back_html,
                             fields,
+                            namedFields: Object.keys(fieldMap).length > 0 ? fieldMap : undefined,
                             tags: tagsArr
                         })
                     }

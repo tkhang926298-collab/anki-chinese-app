@@ -105,7 +105,9 @@ export default function ImportContent() {
                     user_id: currentUserId,
                     front_html: card.front_html || '',
                     back_html: card.back_html || '',
-                    fields: card.fields,
+                    fields: card.namedFields && Object.keys(card.namedFields).length > 0
+                        ? card.namedFields
+                        : card.fields,
                     tags: card.tags || [],
                     state: 'new' as const,
                     due: null,

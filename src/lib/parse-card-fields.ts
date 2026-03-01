@@ -105,19 +105,23 @@ function stripHtml(html: string): string {
 // ============================================================
 
 const HANZI_FIELD_NAMES = [
-    'mặt trước', 'front', 'sentence', 'phrase chinese', 'phrase_chinese',
+    'mặt trước', 'chữ hán', 'front', 'sentence', 'phrase chinese', 'phrase_chinese',
     'word', 'hanzi', 'chinese', 'simplified', 'keyword', '汉字', 'character'
 ];
 
 const MEANING_FIELD_NAMES = [
-    'tiếng việt', 'mặt sau', 'vietnamese', 'definitions', 'definition',
+    'nghĩa', 'tiếng việt', 'mặt sau', 'vietnamese', 'definitions', 'definition',
     'phrase vietnamese', 'phrase_vietnamese', 'short vietnamese', 'short_vietnamese',
-    'meaning', 'back', 'nghĩa', '意思', 'translation_vn', 'full vietnamese'
+    'meaning', 'back', '意思', 'translation_vn', 'full vietnamese'
 ];
 
 const PINYIN_FIELD_NAMES = [
-    'phiên âm', 'pinyin', 'reading', 'pronunciation', '拼音',
+    'pinyin', 'phiên âm', 'reading', 'pronunciation', '拼音',
     'transcription', 'ipa'
+];
+
+const HANVIET_FIELD_NAMES = [
+    'hán việt'
 ];
 
 function matchesFieldName(name: string, patterns: string[]): boolean {
@@ -145,6 +149,9 @@ function parseNamedFields(fields: Record<string, any>, result: ParsedCardFields)
             found = true;
         } else if (!result.pinyin && matchesFieldName(key, PINYIN_FIELD_NAMES)) {
             result.pinyin = cleanVal;
+            found = true;
+        } else if (matchesFieldName(key, HANVIET_FIELD_NAMES)) {
+            // Hán Việt is stored but not used for display; skip to avoid confusion
             found = true;
         }
     }
@@ -242,10 +249,16 @@ function parseArrayFields(fields: string[], result: ParsedCardFields): boolean {
  *  2. fields JSON (array) → positional heuristics
  *  3. front_html + back_html → line-by-line classification
  */
-export function parseCardFields(card: { front_html?: string; back_html?: string; fields?: any }): ParsedCardFields {
+export function parseCardFields(card: { front_html?: string; back_html?: string; fields?: any; namedFields?: Record<string, string> }): ParsedCardFields {
     const result: ParsedCardFields = { hanzi: '', pinyin: '', meaning: '' };
 
-    // === Step 1: Try structured fields (highest priority) ===
+    // === Step 1: Try namedFields first (highest priority — has field names) ===
+    if (card.namedFields && typeof card.namedFields === 'object') {
+        const success = parseNamedFields(card.namedFields, result);
+        if (success && result.hanzi && result.meaning) return result;
+    }
+
+    // === Step 2: Try structured fields ===
     if (card.fields) {
         if (Array.isArray(card.fields) && card.fields.length >= 2) {
             const success = parseArrayFields(card.fields as string[], result);
@@ -256,16 +269,16 @@ export function parseCardFields(card: { front_html?: string; back_html?: string;
         }
     }
 
-    // === Step 2: Extract hanzi from front_html (if not already found) ===
+    // === Step 3: Extract hanzi from front_html (if not already found) ===
     const frontText = stripHtml(card.front_html || '');
     if (!result.hanzi && hasChinese(frontText)) {
         result.hanzi = frontText.split('\n').map(l => l.trim()).filter(l => l.length > 0)[0] || frontText;
-    } else if (!result.hanzi && !result.meaning && frontText) {
-        // front might be pinyin or meaning in some decks
-        result.meaning = frontText;
+    } else if (!result.hanzi && frontText && !hasChinese(frontText)) {
+        // Reversed card: front is Vietnamese meaning, back should have Chinese
+        // Don't assign to meaning here — let back_html parsing find hanzi first
     }
 
-    // === Step 3: Parse back_html into lines and classify each ===
+    // === Step 4: Parse back_html into lines and classify each ===
     if (!result.meaning || !result.pinyin) {
         let backHtml = card.back_html || '';
 
