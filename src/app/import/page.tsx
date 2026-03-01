@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { UploadCloud, FileType, CheckCircle, Loader2 } from "lucide-react"
+import { UploadCloud, FileType, CheckCircle, Loader2, ClipboardPaste } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,11 @@ export default function ImportPage() {
 
     const [isParsing, setIsParsing] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
+
+    // Quizlet Import states
+    const [quizletText, setQuizletText] = useState('')
+    const [quizletDeckName, setQuizletDeckName] = useState('')
+    const [isImportingQuizlet, setIsImportingQuizlet] = useState(false)
 
     // Xử lý nạp file
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,11 +161,14 @@ export default function ImportPage() {
     return (
         <div className="container mx-auto py-10 max-w-3xl">
             <div className="mb-8 space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Import dữ liệu từ Anki</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Import dữ liệu</h1>
                 <p className="text-muted-foreground">
-                    Nạp các file .apkg gốc mà bạn đang học để đồng bộ kho từ vựng lên hệ thống. Hỗ trợ đầy đủ định dạng Subdeck và Tags.
+                    Hỗ trợ import từ file Anki (.apkg) hoặc dán nội dung từ Quizlet / CSV.
                 </p>
             </div>
+
+            {/* Section 1: Anki .apkg */}
+            <h2 className="text-xl font-semibold mt-2 mb-3">📦 Import từ file Anki (.apkg)</h2>
 
             <Card>
                 <CardHeader>
@@ -291,6 +299,115 @@ export default function ImportPage() {
                         </Button>
                     </CardFooter>
                 )}
+            </Card>
+
+            {/* Section 2: Quizlet CSV/TSV */}
+            <h2 className="text-xl font-semibold mt-10 mb-3">📋 Import từ Quizlet / CSV</h2>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Dán nội dung từ Quizlet</CardTitle>
+                    <CardDescription>
+                        Copy dữ liệu từ Quizlet hoặc dán nội dung CSV/TSV. Mỗi dòng là 1 thẻ, các cột cách nhau bởi Tab hoặc dấu phẩy. Cột đầu = Mặt trước, cột sau = Mặt sau.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div>
+                        <label className="text-sm font-medium mb-1.5 block">Tên bộ thẻ</label>
+                        <input
+                            type="text"
+                            value={quizletDeckName}
+                            onChange={e => setQuizletDeckName(e.target.value)}
+                            placeholder="Ví dụ: Từ vựng HSK 3"
+                            className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium mb-1.5 block">Nội dung (mỗi dòng = 1 thẻ)</label>
+                        <textarea
+                            value={quizletText}
+                            onChange={e => setQuizletText(e.target.value)}
+                            placeholder={`Ví dụ:\n你好\tXin chào\n谢谢\tCảm ơn\n再见\tTạm biệt`}
+                            rows={8}
+                            className="w-full px-4 py-3 rounded-xl border bg-background text-sm font-mono resize-y"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1.5">
+                            {quizletText.trim() ? `${quizletText.trim().split('\n').filter(l => l.trim()).length} dòng phát hiện` : 'Chưa có dữ liệu'}
+                        </p>
+                    </div>
+                </CardContent>
+                <CardFooter className="border-t py-4">
+                    <Button
+                        className="w-full"
+                        disabled={!quizletText.trim() || !quizletDeckName.trim() || isImportingQuizlet}
+                        onClick={async () => {
+                            setIsImportingQuizlet(true)
+                            try {
+                                const { data: { user } } = await supabase.auth.getUser()
+                                const userId = user?.id || 'offline-user-local'
+                                const now = new Date().toISOString()
+                                const deckId = crypto.randomUUID()
+
+                                await db.decks.add({
+                                    id: deckId,
+                                    user_id: userId,
+                                    name: quizletDeckName.trim(),
+                                    description: `Imported from Quizlet/CSV: ${new Date().toLocaleDateString()}`,
+                                    created_at: now,
+                                    last_reviewed: null
+                                })
+
+                                const lines = quizletText.trim().split('\n').filter(l => l.trim())
+                                const cards = lines.map(line => {
+                                    // Auto-detect separator: Tab > Comma > Semicolon
+                                    let parts: string[]
+                                    if (line.includes('\t')) {
+                                        parts = line.split('\t')
+                                    } else if (line.includes(',')) {
+                                        parts = line.split(',')
+                                    } else if (line.includes(';')) {
+                                        parts = line.split(';')
+                                    } else {
+                                        parts = [line, '']
+                                    }
+
+                                    return {
+                                        id: crypto.randomUUID(),
+                                        deck_id: deckId,
+                                        user_id: userId,
+                                        front_html: parts[0]?.trim() || '',
+                                        back_html: parts.slice(1).join(', ').trim() || '',
+                                        fields: { front: parts[0]?.trim(), back: parts.slice(1).join(', ').trim() },
+                                        tags: [],
+                                        state: 'new' as const,
+                                        due: null,
+                                        reps: 0,
+                                        lapses: 0,
+                                        stability: 0,
+                                        difficulty: 4.5,
+                                        elapsed_days: 0,
+                                        scheduled_days: 0,
+                                        created_at: now,
+                                        last_review: null
+                                    }
+                                })
+
+                                await db.cards.bulkAdd(cards)
+                                toast.success(`Import thành công! Đã tạo bộ "${quizletDeckName}" với ${cards.length} thẻ.`)
+                                router.push('/dashboard')
+                            } catch (err: any) {
+                                toast.error(`Lỗi: ${err.message}`)
+                            } finally {
+                                setIsImportingQuizlet(false)
+                            }
+                        }}
+                    >
+                        {isImportingQuizlet ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang import...</>
+                        ) : (
+                            <><ClipboardPaste className="mr-2 h-4 w-4" /> Import vào máy</>
+                        )}
+                    </Button>
+                </CardFooter>
             </Card>
         </div>
     )

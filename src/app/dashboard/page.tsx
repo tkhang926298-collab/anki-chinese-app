@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { BookOpen, Clock, Plus, Target, TrendingUp, UploadCloud, Trash2, Tag } from "lucide-react"
+import { BookOpen, Clock, Plus, Target, TrendingUp, UploadCloud, Trash2, Tag, Flame, Search } from "lucide-react"
 import { toast } from "sonner"
 
 import { useLiveQuery } from "dexie-react-hooks"
@@ -22,6 +22,7 @@ import { createClient } from "@/lib/supabase/client"
 export default function DashboardPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [systemDecks, setSystemDecks] = useState<any[]>([])
+    const [searchQuery, setSearchQuery] = useState('')
 
     // Fetch System Decks from Supabase
     useEffect(() => {
@@ -135,6 +136,39 @@ export default function DashboardPage() {
 
     const mergedDecks = [...systemDecks, ...(decksWithStats || [])]
 
+    // Tính thống kê từ review_logs
+    const studyStats = useLiveQuery(async () => {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+
+        // Đếm số reviews hôm nay
+        const todayReviews = await db.review_logs.where('review').aboveOrEqual(todayStart).count();
+
+        // Tính streak: đếm số ngày liên tiếp có review
+        const allLogs = await db.review_logs.orderBy('review').reverse().toArray();
+        let streak = 0;
+        if (todayReviews > 0) streak = 1;
+
+        const checkedDays = new Set<string>();
+        for (const log of allLogs) {
+            const day = new Date(log.review).toDateString();
+            checkedDays.add(day);
+        }
+
+        // Đếm ngược từ hôm nay
+        for (let i = todayReviews > 0 ? 1 : 0; i < 365; i++) {
+            const checkDate = new Date(now);
+            checkDate.setDate(checkDate.getDate() - i);
+            if (checkedDays.has(checkDate.toDateString())) {
+                if (i > 0 || todayReviews > 0) streak = i + 1;
+            } else {
+                break;
+            }
+        }
+
+        return { todayReviews, streak };
+    }, []) || { todayReviews: 0, streak: 0 }
+
     if (isLoading && !decksWithStats) {
         return (
             <div className="container py-10 flex justify-center items-center h-[50vh]">
@@ -197,16 +231,31 @@ export default function DashboardPage() {
                 <Card className="bg-card/40 backdrop-blur-xl border-orange-500/10 shadow-lg hover:shadow-orange-500/5 transition-all">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Chuỗi Ngày Học</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-orange-500" />
+                        <Flame className="h-4 w-4 text-orange-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-black text-orange-500">3 Ngày</div>
-                        <p className="text-xs text-orange-500/70 font-medium mt-1">Giữ vững phong độ!</p>
+                        <div className="text-3xl font-black text-orange-500">{studyStats.streak} Ngày</div>
+                        <p className="text-xs text-orange-500/70 font-medium mt-1">
+                            {studyStats.todayReviews > 0 ? `Hôm nay: ${studyStats.todayReviews} thẻ` : 'Chưa học hôm nay!'}
+                        </p>
                     </CardContent>
                 </Card>
             </div>
 
-            <h2 className="text-xl font-semibold tracking-tight mb-4">Bộ Từ Vựng Của Bạn</h2>
+            <div className="flex items-center gap-4 mb-4">
+                <h2 className="text-xl font-semibold tracking-tight">Bộ Từ Vựng Của Bạn</h2>
+                <div className="flex-1" />
+                <div className="relative max-w-xs w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        placeholder="Tìm bộ thẻ..."
+                        className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                </div>
+            </div>
             {!mergedDecks || mergedDecks.length === 0 ? (
                 <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed">
                     <BookOpen className="h-12 w-12 text-muted-foreground/50 mb-4" />
@@ -222,7 +271,11 @@ export default function DashboardPage() {
                 </Card>
             ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {mergedDecks?.map(deck => (
+                    {mergedDecks?.filter(deck => {
+                        if (!searchQuery.trim()) return true;
+                        const q = searchQuery.toLowerCase();
+                        return deck.name?.toLowerCase().includes(q) || deck.displayName?.toLowerCase().includes(q) || deck.parentDeck?.toLowerCase().includes(q);
+                    }).map(deck => (
                         <Card key={deck.id} className={`relative flex flex-col hover:border-primary/50 transition-colors bg-card/40 backdrop-blur-md shadow-md ${deck.isSystem ? 'border-indigo-500/30' : ''}`}>
                             {deck.isSystem ? (
                                 <div className="absolute right-2 top-2 z-10 bg-indigo-500/10 text-indigo-500 text-[10px] font-bold px-2 py-1 rounded-sm flex items-center shadow-sm">

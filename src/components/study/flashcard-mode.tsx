@@ -19,9 +19,10 @@ interface FlashcardModeProps {
     choices: Choice[]
     onNext: () => void
     onResult?: (isCorrect: boolean) => void
+    swapPrompt?: { meaning: string; pinyin: string } | null
 }
 
-export function FlashcardMode({ card, choices, onNext, onResult }: FlashcardModeProps) {
+export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt }: FlashcardModeProps) {
     const [selectedChoice, setSelectedChoice] = useState<Choice | null>(null)
     const [isUpdating, setIsUpdating] = useState(false)
 
@@ -132,27 +133,36 @@ export function FlashcardMode({ card, choices, onNext, onResult }: FlashcardMode
             <Card className="w-full min-h-[20rem] flex flex-col items-center justify-center border-2 rounded-3xl bg-card shadow-sm p-8 relative overflow-hidden group">
                 <div className="w-full flex items-center justify-between mb-auto">
                     <span className="text-sm font-bold tracking-wider text-muted-foreground uppercase opacity-80">
-                        Thuật ngữ
+                        {swapPrompt ? 'Nghĩa' : 'Thuật ngữ'}
                     </span>
-                    <button
-                        onClick={() => {
-                            const text = card.front_html?.replace(/<[^>]*>/g, '').trim()
-                            if (text && typeof window !== 'undefined' && window.speechSynthesis) {
-                                const utterance = new SpeechSynthesisUtterance(text)
-                                utterance.lang = 'zh-CN'
-                                utterance.rate = 0.8
-                                window.speechSynthesis.cancel()
-                                window.speechSynthesis.speak(utterance)
-                            }
-                        }}
-                        className="p-2 rounded-xl hover:bg-muted/80 transition-colors text-muted-foreground hover:text-primary"
-                        title="Phát âm"
-                    >
-                        <Volume2 className="h-5 w-5" />
-                    </button>
+                    {!swapPrompt && (
+                        <button
+                            onClick={() => {
+                                const text = card.front_html?.replace(/<[^>]*>/g, '').trim()
+                                if (text && typeof window !== 'undefined' && window.speechSynthesis) {
+                                    const utterance = new SpeechSynthesisUtterance(text)
+                                    utterance.lang = 'zh-CN'
+                                    utterance.rate = 0.8
+                                    window.speechSynthesis.cancel()
+                                    window.speechSynthesis.speak(utterance)
+                                }
+                            }}
+                            className="p-2 rounded-xl hover:bg-muted/80 transition-colors text-muted-foreground hover:text-primary"
+                            title="Phát âm"
+                        >
+                            <Volume2 className="h-5 w-5" />
+                        </button>
+                    )}
                 </div>
                 <CardContent className="p-0 text-center w-full flex-1 flex flex-col justify-center items-center mt-2">
-                    <AnkiHtml className="text-5xl sm:text-6xl lg:text-7xl font-medium text-foreground w-full leading-tight font-chinese" html={card.front_html} />
+                    {swapPrompt ? (
+                        <div className="space-y-3">
+                            <p className="text-3xl sm:text-4xl lg:text-5xl font-medium text-foreground leading-relaxed">{swapPrompt.meaning || 'Không có nghĩa'}</p>
+                            {swapPrompt.pinyin && <p className="text-xl text-muted-foreground italic">{swapPrompt.pinyin}</p>}
+                        </div>
+                    ) : (
+                        <AnkiHtml className="text-5xl sm:text-6xl lg:text-7xl font-medium text-foreground w-full leading-tight font-chinese" html={card.front_html} />
+                    )}
                 </CardContent>
                 <div className="w-full mt-auto"></div>
             </Card>
@@ -186,7 +196,7 @@ export function FlashcardMode({ card, choices, onNext, onResult }: FlashcardMode
                                 <span className="flex items-center justify-center w-8 h-8 rounded-md bg-muted/50 text-muted-foreground font-mono text-sm font-bold border shrink-0">
                                     {idx + 1}
                                 </span>
-                                <span className="font-medium text-xl sm:text-2xl leading-relaxed block">
+                                <span className={`font-medium leading-relaxed block ${swapPrompt ? 'text-3xl sm:text-4xl font-chinese' : 'text-xl sm:text-2xl'}`}>
                                     {choice.html}
                                 </span>
                             </div>

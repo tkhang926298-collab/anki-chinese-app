@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense, useMemo } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
-import { ArrowLeft, Loader2, Sparkles, Settings2, BookOpen, Keyboard, CheckCircle2, XCircle } from "lucide-react"
+import { ArrowLeft, Loader2, Sparkles, Settings2, BookOpen, Keyboard, CheckCircle2, XCircle, ArrowLeftRight, Puzzle } from "lucide-react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client"
 import { db } from "@/lib/db/local"
 import { FlashcardMode } from "@/components/study/flashcard-mode"
 import { TypingMode } from "@/components/study/typing-mode"
+import { MatchingMode } from "@/components/study/matching-mode"
 import { SessionSummary } from "@/components/study/session-summary"
 import { parseCardFields } from "@/lib/parse-card-fields"
 
@@ -34,7 +35,7 @@ function StudyPageContent() {
 
     // Configuration states
     const [isConfiguring, setIsConfiguring] = useState(true)
-    const [configMode, setConfigMode] = useState<'flashcard' | 'typing'>((mode as 'flashcard' | 'typing') || 'flashcard')
+    const [configMode, setConfigMode] = useState<'flashcard' | 'typing' | 'matching'>((mode as 'flashcard' | 'typing' | 'matching') || 'flashcard')
     const [configLimit, setConfigLimit] = useState<number>(20)
     const [configSwap, setConfigSwap] = useState(false)
 
@@ -61,40 +62,62 @@ function StudyPageContent() {
         const getCardMeaning = (card: any): string => {
             if (!card) return "";
             const parsed = parseCardFields(card);
-            // CHỈ lấy meaning (Tiếng Việt), KHÔNG fallback sang pinyin!
             let meaning = parsed.meaning || "";
-            // Nếu meaning trông giống Pinyin → bỏ qua
             if (meaning && isLikelyPinyin(meaning)) meaning = "";
             if (!meaning) return "";
             return meaning.length > 60 ? meaning.substring(0, 57) + '...' : meaning;
         };
 
+        const getCardHanzi = (card: any): string => {
+            if (!card) return "";
+            const parsed = parseCardFields(card);
+            return parsed.hanzi || card.front_html?.replace(/<[^>]*>/g, '').trim() || "";
+        };
+
+        // Đảo chiều: khi swap thì choices = Hanzi, câu hỏi = Meaning
+        if (configSwap) {
+            const correctHanzi = getCardHanzi(currentCard);
+            if (!correctHanzi) return [];
+
+            const pool = allDueCards.filter((c: any) => c.id !== currentCard.id);
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
+            const distractors: { html: string; isCorrect: boolean }[] = [];
+            const usedHanzi = new Set<string>([correctHanzi]);
+
+            for (const c of shuffled) {
+                if (distractors.length >= 3) break;
+                const hanzi = getCardHanzi(c);
+                if (!hanzi || usedHanzi.has(hanzi)) continue;
+                usedHanzi.add(hanzi);
+                distractors.push({ html: hanzi, isCorrect: false });
+            }
+            while (distractors.length < 3) {
+                distractors.push({ html: ["其他", "不对", "别的"][distractors.length] || "错", isCorrect: false });
+            }
+            return [{ html: correctHanzi, isCorrect: true }, ...distractors].sort(() => Math.random() - 0.5);
+        }
+
+        // Chiều bình thường: choices = Meaning
         let correctMeaning = getCardMeaning(currentCard);
-        // Nếu meaning TV rỗng → fallback sang pinyin CHỈ cho đáp án đúng
         if (!correctMeaning) {
             const parsed = parseCardFields(currentCard);
             correctMeaning = parsed.meaning || parsed.pinyin || "Đáp án";
         }
-        // Tạo pool đáp án sai từ các thẻ khác trong deck
         const pool = allDueCards.filter((c: any) => c.id !== currentCard.id);
         const shuffled = [...pool].sort(() => Math.random() - 0.5);
-
-        // Lấy 3 đáp án sai THỰC (chỉ Tiếng Việt, không Pinyin, không trùng)
         const distractors: { html: string; isCorrect: boolean }[] = [];
         const usedMeanings = new Set<string>(correctMeaning ? [correctMeaning.toLowerCase()] : []);
 
         for (const card of shuffled) {
             if (distractors.length >= 3) break;
             const meaning = getCardMeaning(card);
-            if (!meaning) continue; // Bỏ qua thẻ không có nghĩa TV
+            if (!meaning) continue;
             const meaningLower = meaning.toLowerCase();
             if (usedMeanings.has(meaningLower)) continue;
-
             usedMeanings.add(meaningLower);
             distractors.push({ html: meaning, isCorrect: false });
         }
 
-        // Fallback nếu không đủ 3 đáp án sai
         const fallbackOptions = ["Đáp án khác", "Không đúng", "Lựa chọn khác"];
         while (distractors.length < 3) {
             distractors.push({ html: fallbackOptions[distractors.length] || "Sai", isCorrect: false });
@@ -104,7 +127,16 @@ function StudyPageContent() {
             { html: correctMeaning, isCorrect: true },
             ...distractors
         ].sort(() => Math.random() - 0.5);
-    }, [currentCard, allDueCards])
+    }, [currentCard, allDueCards, configSwap])
+
+    // Tạo prompt cho flashcard khi đảo chiều
+    const swappedPrompt = useMemo(() => {
+        if (!configSwap || !currentCard) return null;
+        const parsed = parseCardFields(currentCard);
+        const meaning = parsed.meaning || "";
+        const pinyin = parsed.pinyin || "";
+        return { meaning, pinyin };
+    }, [currentCard, configSwap])
 
     // Load cards due for today
     useEffect(() => {
@@ -240,7 +272,7 @@ function StudyPageContent() {
                     <div className="bg-card border shadow-sm rounded-2xl p-6 sm:p-10 space-y-10">
                         <div className="space-y-4">
                             <h3 className="font-semibold text-lg">1. Chọn phương thức học</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <button
                                     onClick={() => setConfigMode('flashcard')}
                                     className={`flex flex-col items-center p-6 border-2 rounded-xl transition-all ${configMode === 'flashcard' ? 'border-primary bg-primary/5 shadow-md text-primary' : 'border-border hover:border-primary/50 text-muted-foreground hover:bg-muted/50'}`}
@@ -256,6 +288,14 @@ function StudyPageContent() {
                                     <Keyboard className="h-8 w-8 mb-3" />
                                     <span className="font-semibold">Luyện Gõ</span>
                                     <span className="text-xs mt-1 opacity-80">Gõ đáp án chính xác</span>
+                                </button>
+                                <button
+                                    onClick={() => setConfigMode('matching')}
+                                    className={`flex flex-col items-center p-6 border-2 rounded-xl transition-all ${configMode === 'matching' ? 'border-primary bg-primary/5 shadow-md text-primary' : 'border-border hover:border-primary/50 text-muted-foreground hover:bg-muted/50'}`}
+                                >
+                                    <Puzzle className="h-8 w-8 mb-3" />
+                                    <span className="font-semibold">Ghép Cặp</span>
+                                    <span className="text-xs mt-1 opacity-80">Nối Hán tự ↔ Nghĩa</span>
                                 </button>
                             </div>
                         </div>
@@ -281,6 +321,29 @@ function StudyPageContent() {
                                 </button>
                             </div>
                         </div>
+
+                        {configMode === 'flashcard' && (
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-lg">3. Chiều học</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => setConfigSwap(false)}
+                                        className={`flex flex-col items-center p-5 border-2 rounded-xl transition-all ${!configSwap ? 'border-primary bg-primary/5 shadow-md text-primary' : 'border-border hover:border-primary/50 text-muted-foreground hover:bg-muted/50'}`}
+                                    >
+                                        <span className="text-2xl mb-2">字 → 🇻🇳</span>
+                                        <span className="font-semibold text-sm">Hán tự → Nghĩa</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setConfigSwap(true)}
+                                        className={`flex flex-col items-center p-5 border-2 rounded-xl transition-all ${configSwap ? 'border-primary bg-primary/5 shadow-md text-primary' : 'border-border hover:border-primary/50 text-muted-foreground hover:bg-muted/50'}`}
+                                    >
+                                        <span className="text-2xl mb-2">🇻🇳 → 字</span>
+                                        <span className="font-semibold text-sm">Nghĩa → Hán tự</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
 
                         <Button size="lg" className="w-full h-14 text-lg font-bold rounded-xl mt-8" onClick={startSession}>
                             Bắt đầu ôn tập 🚀
@@ -311,11 +374,32 @@ function StudyPageContent() {
                         </div>
                         <Progress value={progressPercent} className="h-2" />
                     </div>
+                    {/* Keyboard shortcuts help */}
+                    <div className="relative group">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                            <span className="text-xs font-bold">⌨</span>
+                        </Button>
+                        <div className="absolute right-0 top-full mt-2 w-56 bg-popover border shadow-xl rounded-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            <p className="text-xs font-bold mb-2 text-foreground">Phím tắt</p>
+                            <div className="space-y-1.5 text-xs text-muted-foreground">
+                                <div className="flex justify-between"><span>Chọn đáp án</span><span className="font-mono bg-muted px-1.5 rounded">1-4</span></div>
+                                <div className="flex justify-between"><span>Tiếp tục</span><span className="font-mono bg-muted px-1.5 rounded">Enter</span></div>
+                                <div className="flex justify-between"><span>Xem đáp án</span><span className="font-mono bg-muted px-1.5 rounded">Ctrl+H</span></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div className="flex-1 container mx-auto max-w-4xl py-8 flex flex-col justify-center">
-                {configMode === 'typing' ? (
+                {configMode === 'matching' ? (
+                    <MatchingMode
+                        cards={cards}
+                        onFinish={(timeMs, attempts) => {
+                            setCurrentIndex(cards.length)
+                        }}
+                    />
+                ) : configMode === 'typing' ? (
                     <TypingMode
                         card={currentCard}
                         onNext={handleNextCard}
@@ -327,6 +411,7 @@ function StudyPageContent() {
                         choices={dummyChoices}
                         onNext={handleNextCard}
                         onResult={handleResult}
+                        swapPrompt={swappedPrompt}
                     />
                 )}
             </div>
