@@ -1,0 +1,541 @@
+================================================================================
+COMPREHENSIVE ANKI FILE STRUCTURE ANALYSIS
+================================================================================
+
+
+================================================================================
+📦 1069_Basic_English_Words_English_Vietnamese__Image-Part_2.apkg
+   Size: 137.7 MB | Format: collection.anki2 | Notes: 490
+
+   📝 Note Types (2):
+      Model: "Basic" (mid=1627533346483)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Picture Words - 1069 words" (mid=1627223237732)
+      Fields: ['Word', 'IPA', 'Vietnamese', 'Suggestion', 'Picture', 'Topic', 'Pronunciation (Recording and/or IPA)']
+      Field Count: 7
+
+      --- Sample 1 (tags: ) ---
+        [0] Word: "a-bit"
+        [1] IPA: ""
+        [2] Vietnamese: "một chút"
+        [3] Suggestion: "a    b_ _"
+        [4] Picture: ""
+        [5] Topic: "Quantifiers"
+        [6] Pronunciation (Recording and/or IPA): ""
+
+      --- Sample 2 (tags: ) ---
+        [0] Word: "above"
+        [1] IPA: "/əˈbʌv/"
+        [2] Vietnamese: "ở trên"
+        [3] Suggestion: "a_ _ _ _"
+        [4] Picture: ""
+        [5] Topic: "Preposition"
+        [6] Pronunciation (Recording and/or IPA): ""
+
+      --- Sample 3 (tags: ) ---
+        [0] Word: "accountant"
+        [1] IPA: "/əˈkaʊntənt/"
+        [2] Vietnamese: "kế toán"
+        [3] Suggestion: "a_ _ _ _ _ _ _ _ _"
+        [4] Picture: ""
+        [5] Topic: "Jobs"
+        [6] Pronunciation (Recording and/or IPA): ""
+
+
+
+================================================================================
+📦 1400_T_Vng_English_Dnh_Cho_Ngi_Mt_Gc.apkg
+   Size: 5.9 MB | Format: collection.anki2 | Notes: 1
+
+   📝 Note Types (6):
+      Model: "Basic (and reversed card)" (mid=1719452649783)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Basic (type in the answer)" (mid=1719452649785)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Basic (optional reversed card)" (mid=1719452649784)
+      Fields: ['Front', 'Back', 'Add Reverse']
+      Field Count: 3
+
+      Model: "Image Occlusion" (mid=1719452649787)
+      Fields: ['Occlusion', 'Image', 'Header', 'Back Extra', 'Comments']
+      Field Count: 5
+
+      Model: "Basic" (mid=1719452649782)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      --- Sample 1 (tags: ) ---
+        [0] Front: "Please update to the latest Anki version, then import the .colpkg/.apkg file again."
+        [1] Back: ""
+
+      Model: "Cloze" (mid=1719452649786)
+      Fields: ['Text', 'Back Extra']
+      Field Count: 2
+
+
+
+================================================================================
+📦 3000-mau-cau-giao-tiep-tieng-trung.apkg
+   Size: 143.9 MB | Format: collection.anki2 | Notes: 2989
+
+   📝 Note Types (2):
+      Model: "Basic" (mid=1627191919925)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Migaku Cantonese Audio Sentence-774d6" (mid=1625328931008)
+      Fields: ['Sentence', 'Translation', 'Target Word', 'Definitions', 'Variant', 'Image', 'Sentence Audio', 'Word Audio']
+      Field Count: 8
+
+      --- Sample 1 (tags: ) ---
+        [0] Sentence: "你好！"
+        [1] Translation: "Nǐ hǎo!"
+        [2] Target Word: "Câu số 1"
+        [3] Definitions: "Chào bạn!"
+        [4] Variant: ""
+        [5] Image: ""
+        [6] Sentence Audio: ""
+        [7] Word Audio: ""
+
+      --- Sample 2 (tags: ) ---
+        [0] Sentence: "你好吗？"
+        [1] Translation: "Nǐ hǎo ma?"
+        [2] Target Word: "Câu số 2"
+        [3] Definitions: "Bạn khỏe không?"
+        [4] Variant: ""
+        [5] Image: ""
+        [6] Sentence Audio: ""
+        [7] Word Audio: ""
+
+      --- Sample 3 (tags: ) ---
+        [0] Sentence: "你爸爸妈妈身体好吗？"
+        [1] Translation: "Nǐ bàba māma shēntǐ hǎo ma?"
+        [2] Target Word: "Câu số 3"
+        [3] Definitions: "Sức khỏe bố mẹ bạn tốt không?"
+        [4] Variant: ""
+        [5] Image: ""
+        [6] Sentence Audio: ""
+        [7] Word Audio: ""
+
+
+
+================================================================================
+📦 4000_Essential_English_Words_1_-_Vietnamese.apkg
+   Size: 114.8 MB | Format: collection.anki2 | Notes: 600
+
+   📝 Note Types (2):
+      Model: "Basic" (mid=1630243922851)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "4000Book1" (mid=1397924728878)
+      Fields: ['№', 'Keyword', 'Suggestion', 'Short Vietnamese', 'Keyword_Sound', 'Image', 'Transcription', 'Explanation', 'Meaning_Sound', 'Example_Sound', 'Full Vietnamese']
+      Field Count: 11
+
+      --- Sample 1 (tags: ) ---
+        [0] №: "1"
+        [1] Keyword: "afraid"
+        [2] Suggestion: "a__ __ __ __d"
+        [3] Short Vietnamese: "Sợ hãi"
+        [4] Keyword_Sound: ""
+        [5] Image: ""
+        [6] Transcription: "[ə'freɪd]"
+        [7] Explanation: "When someone is {{c1::afraid}}, they feel fear.→  The woman was {{c1::afraid}} of what she saw."
+        [8] Meaning_Sound: ""
+        [9] Example_Sound: ""
+        [10] Full Vietnamese: "afraid /ə'freid/   tính từ  sợ, hãi, hoảng, hoảng sợ  we are not afraid of dificulties: chúng ta không sợ khó khăn to be"
+
+      --- Sample 2 (tags: ) ---
+        [0] №: "2"
+        [1] Keyword: "agree"
+        [2] Suggestion: "a__ __ __ __"
+        [3] Short Vietnamese: "Đồng ý"
+        [4] Keyword_Sound: ""
+        [5] Image: ""
+        [6] Transcription: "[ə'griː]"
+        [7] Explanation: "To {{c1::agree}} is to say “yes” or to think the same way.→  A: The food is very good in that restaurant.      B: I {{c1"
+        [8] Meaning_Sound: ""
+        [9] Example_Sound: ""
+        [10] Full Vietnamese: "agree /ə'gri:/   nội động từ  đồng ý, tán thành, bằng lòng, thoả thuận  to agree go proposal: tán thành một lời đề nghị "
+
+      --- Sample 3 (tags: ) ---
+        [0] №: "3"
+        [1] Keyword: "angry"
+        [2] Suggestion: "a__ __ __y"
+        [3] Short Vietnamese: "Tức giận"
+        [4] Keyword_Sound: ""
+        [5] Image: ""
+        [6] Transcription: "['æŋgrɪ]"
+        [7] Explanation: "When someone is {{c1::angry}}, they may want to speak loudly or fight.→  She didn’t do her homework, so her father is {{"
+        [8] Meaning_Sound: ""
+        [9] Example_Sound: ""
+        [10] Full Vietnamese: "tính từ  giận, tức giận, cáu  to be (get) angry with (at) someone: tức giận ai to be (get) angry at (about) something: t"
+
+
+
+================================================================================
+📦 Chinese Speaking Practice.apkg
+   Size: 1438.1 MB | Format: collection.anki2 | Notes: 405
+
+   📝 Note Types (2):
+      Model: "Chinese Speaking Practice" (mid=1663550925508)
+      Fields: ['№', 'Phrase Vietnamese', 'Part of Speech', 'Phrase Chinese', 'Part of Speech 2', 'Audio Chinese', 'Image', 'Vocab', 'Mean']
+      Field Count: 9
+
+      --- Sample 1 (tags: ) ---
+        [0] №: "Speaking Chinese 400 -01"
+        [1] Phrase Vietnamese: "Tôi về rồi nè"
+        [2] Part of Speech: "Ủa huẩy lai lơ"
+        [3] Phrase Chinese: "我回来了"
+        [4] Part of Speech 2: ""
+        [5] Audio Chinese: ""
+        [6] Image: ""
+        [7] Vocab: ""
+        [8] Mean: ""
+
+      --- Sample 2 (tags: ) ---
+        [0] №: "Speaking Chinese 400 -02"
+        [1] Phrase Vietnamese: "Tôi hiểu rồi."
+        [2] Part of Speech: "Ủa mính pai lơ"
+        [3] Phrase Chinese: "我明白了"
+        [4] Part of Speech 2: ""
+        [5] Audio Chinese: ""
+        [6] Image: ""
+        [7] Vocab: ""
+        [8] Mean: ""
+
+      --- Sample 3 (tags: ) ---
+        [0] №: "Speaking Chinese 400 -03"
+        [1] Phrase Vietnamese: "Tin tôi đi"
+        [2] Part of Speech: "Xeng xin ủa"
+        [3] Phrase Chinese: "相信我"
+        [4] Part of Speech 2: ""
+        [5] Audio Chinese: ""
+        [6] Image: ""
+        [7] Vocab: ""
+        [8] Mean: ""
+
+      Model: "Basic" (mid=1664001722404)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+
+
+================================================================================
+📦 English_vocabulary_in_use_advanced_for_the_Vietnamese.apkg
+   Size: 25.0 MB | Format: collection.anki2 | Notes: 1
+
+   📝 Note Types (6):
+      Model: "Basic (and reversed card)" (mid=1741387726997)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Basic (type in the answer)" (mid=1741387726999)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Cloze" (mid=1741387727000)
+      Fields: ['Text', 'Back Extra']
+      Field Count: 2
+
+      Model: "Image Occlusion" (mid=1741387727001)
+      Fields: ['Occlusion', 'Image', 'Header', 'Back Extra', 'Comments']
+      Field Count: 5
+
+      Model: "Basic" (mid=1741387726996)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      --- Sample 1 (tags: ) ---
+        [0] Front: "Please update to the latest Anki version, then import the .colpkg/.apkg file again."
+        [1] Back: ""
+
+      Model: "Basic (optional reversed card)" (mid=1741387726998)
+      Fields: ['Front', 'Back', 'Add Reverse']
+      Field Count: 3
+
+
+
+================================================================================
+📦 GLASSY-GAIA_Journey_To_The_West_1-5.apkg
+   Size: 40.3 MB | Format: collection.anki2 | Notes: 1
+
+   📝 Note Types (6):
+      Model: "Basic (and reversed card)" (mid=1762175699189)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Basic (type in the answer)" (mid=1762175699191)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Cloze" (mid=1762175699192)
+      Fields: ['Text', 'Back Extra']
+      Field Count: 2
+
+      Model: "Image Occlusion" (mid=1762175699193)
+      Fields: ['Occlusion', 'Image', 'Header', 'Back Extra', 'Comments']
+      Field Count: 5
+
+      Model: "Basic" (mid=1762175699188)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      --- Sample 1 (tags: ) ---
+        [0] Front: "Please update to the latest Anki version, then import the .colpkg/.apkg file again."
+        [1] Back: ""
+
+      Model: "Basic (optional reversed card)" (mid=1762175699190)
+      Fields: ['Front', 'Back', 'Add Reverse']
+      Field Count: 3
+
+
+
+================================================================================
+📦 GLASSY-GAIA_chinese-idioms-bilingial_en-vn_.apkg
+   Size: 10.3 MB | Format: collection.anki2 | Notes: 1
+
+   📝 Note Types (6):
+      Model: "Cloze" (mid=1761193717159)
+      Fields: ['Text', 'Back Extra']
+      Field Count: 2
+
+      Model: "Basic (optional reversed card)" (mid=1761193717157)
+      Fields: ['Front', 'Back', 'Add Reverse']
+      Field Count: 3
+
+      Model: "Basic (and reversed card)" (mid=1761193717156)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Basic (type in the answer)" (mid=1761193717158)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Image Occlusion" (mid=1761193717160)
+      Fields: ['Occlusion', 'Image', 'Header', 'Back Extra', 'Comments']
+      Field Count: 5
+
+      Model: "Basic" (mid=1761193717155)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      --- Sample 1 (tags: ) ---
+        [0] Front: "Please update to the latest Anki version, then import the .colpkg/.apkg file again."
+        [1] Back: ""
+
+
+
+================================================================================
+📦 GLASSY-GAIA_netflix-nice-view-anki-mandarin-zh_.apkg
+   Size: 21.7 MB | Format: collection.anki2 | Notes: 1
+
+   📝 Note Types (6):
+      Model: "Basic" (mid=1761304295021)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      --- Sample 1 (tags: ) ---
+        [0] Front: "Please update to the latest Anki version, then import the .colpkg/.apkg file again."
+        [1] Back: ""
+
+      Model: "Basic (type in the answer)" (mid=1761304295024)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Basic (optional reversed card)" (mid=1761304295023)
+      Fields: ['Front', 'Back', 'Add Reverse']
+      Field Count: 3
+
+      Model: "Basic (and reversed card)" (mid=1761304295022)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Image Occlusion" (mid=1761304295026)
+      Fields: ['Occlusion', 'Image', 'Header', 'Back Extra', 'Comments']
+      Field Count: 5
+
+      Model: "Cloze" (mid=1761304295025)
+      Fields: ['Text', 'Back Extra']
+      Field Count: 2
+
+
+
+================================================================================
+📦 HSK1-6_full_audio_image_and_Vietnamese_meaning_.apkg
+   Size: 149.2 MB | Format: collection.anki2 | Notes: 4994
+
+   📝 Note Types (1):
+      Model: "Basic (type in the answer)-53098" (mid=1550648824034)
+      Fields: ['Mặt trước', 'Tiếng Việt', 'Phiên âm', 'Audio', 'Hình ảnh', 'Từ Điển', 'Mở rộng']
+      Field Count: 7
+
+      --- Sample 1 (tags: HSK1) ---
+        [0] Mặt trước: "爱"
+        [1] Tiếng Việt: "yêu"
+        [2] Phiên âm: "Ài"
+        [3] Audio: ""
+        [4] Hình ảnh: ""
+        [5] Từ Điển: "`1`爱`4`Từ phồn thể: (愛)[ài]Bộ: 爪 (爫，) - TrảoSố nét: 10Hán Việt: ÁI 1. yêu; thương; yêu mến; mến。对人或事物有很深的感情。 爱祖国。 yêu tổ"
+        [6] Mở rộng: "1.Think of my love so profound, so pure, and so devoted, and wish I were with you. I am going to bed praying God for you"
+
+      --- Sample 2 (tags: HSK1) ---
+        [0] Mặt trước: "八"
+        [1] Tiếng Việt: "số tám, tám"
+        [2] Phiên âm: "bā"
+        [3] Audio: ""
+        [4] Hình ảnh: ""
+        [5] Từ Điển: "`1`八`4`[bā]Bộ: 八 - BátSố nét: 2Hán Việt: BÁT tám; 8; thứ 8。 数目，七加一后所得。 八 月革命。 Cách mạng tháng Tám 八 号 số 8 Ghi chú: Chú "
+        [6] Mở rộng: "1.The specific powers granted to the Security Council for the discharge of these duties are laid down in Chapters VI, VI"
+
+      --- Sample 3 (tags: HSK1) ---
+        [0] Mặt trước: "爸爸"
+        [1] Tiếng Việt: "cha, bố, ba"
+        [2] Phiên âm: "bàba"
+        [3] Audio: ""
+        [4] Hình ảnh: ""
+        [5] Từ Điển: ""
+        [6] Mở rộng: "1.She said she realized that she did not want to become an overworked corporate warrior like her father.
+               "
+
+
+
+================================================================================
+📦 Sưu tầm.apkg
+   Size: 10.8 MB | Format: collection.anki2 | Notes: 1
+
+   📝 Note Types (6):
+      Model: "Basic (type in the answer)" (mid=1709101581145)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Image Occlusion" (mid=1709101581147)
+      Fields: ['Occlusion', 'Image', 'Header', 'Back Extra', 'Comments']
+      Field Count: 5
+
+      Model: "Basic (and reversed card)" (mid=1709101581143)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Cloze" (mid=1709101581146)
+      Fields: ['Text', 'Back Extra']
+      Field Count: 2
+
+      Model: "Basic" (mid=1709101581142)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      --- Sample 1 (tags: ) ---
+        [0] Front: "Please update to the latest Anki version, then import the .colpkg/.apkg file again."
+        [1] Back: ""
+
+      Model: "Basic (optional reversed card)" (mid=1709101581144)
+      Fields: ['Front', 'Back', 'Add Reverse']
+      Field Count: 3
+
+
+
+================================================================================
+📦 TIẾNG TRUNG__02. GIÁO TRÌNH HÁN NGỮ__Từ vựng GTHN 1-2.apkg
+   Size: 52.7 MB | Format: collection.anki2 | Notes: 1
+
+   📝 Note Types (6):
+      Model: "Basic (optional reversed card)" (mid=1749968296352)
+      Fields: ['Front', 'Back', 'Add Reverse']
+      Field Count: 3
+
+      Model: "Basic" (mid=1749968296350)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      --- Sample 1 (tags: ) ---
+        [0] Front: "Please update to the latest Anki version, then import the .colpkg/.apkg file again."
+        [1] Back: ""
+
+      Model: "Cloze" (mid=1749968296354)
+      Fields: ['Text', 'Back Extra']
+      Field Count: 2
+
+      Model: "Basic (type in the answer)" (mid=1749968296353)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Image Occlusion" (mid=1749968296355)
+      Fields: ['Occlusion', 'Image', 'Header', 'Back Extra', 'Comments']
+      Field Count: 5
+
+      Model: "Basic (and reversed card)" (mid=1749968296351)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+
+
+================================================================================
+📦 T_vng_HSK.apkg
+   Size: 0.4 MB | Format: collection.anki2 | Notes: 4994
+
+   📝 Note Types (1):
+      Model: "Basic (type in the answer)" (mid=1550648824034)
+      Fields: ['Mặt trước', 'Mặt sau', 'Phiên âm']
+      Field Count: 3
+
+      --- Sample 1 (tags: HSK1) ---
+        [0] Mặt trước: "爱"
+        [1] Mặt sau: "yêu"
+        [2] Phiên âm: "Ài"
+
+      --- Sample 2 (tags: HSK1) ---
+        [0] Mặt trước: "八"
+        [1] Mặt sau: "số tám, tám"
+        [2] Phiên âm: "bā"
+
+      --- Sample 3 (tags: HSK1) ---
+        [0] Mặt trước: "爸爸"
+        [1] Mặt sau: "cha, bố, ba"
+        [2] Phiên âm: "bàba"
+
+
+
+================================================================================
+📦 📕⭐ENGLISH-GRAMMAR.apkg
+   Size: 0.4 MB | Format: collection.anki2 | Notes: 1
+
+   📝 Note Types (6):
+      Model: "Basic (and reversed card)" (mid=1763269932492)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Cloze" (mid=1763269932495)
+      Fields: ['Text', 'Back Extra']
+      Field Count: 2
+
+      Model: "Basic (type in the answer)" (mid=1763269932494)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      Model: "Image Occlusion" (mid=1763269932496)
+      Fields: ['Occlusion', 'Image', 'Header', 'Back Extra', 'Comments']
+      Field Count: 5
+
+      Model: "Basic" (mid=1763269932491)
+      Fields: ['Front', 'Back']
+      Field Count: 2
+
+      --- Sample 1 (tags: ) ---
+        [0] Front: "Please update to the latest Anki version, then import the .colpkg/.apkg file again."
+        [1] Back: ""
+
+      Model: "Basic (optional reversed card)" (mid=1763269932493)
+      Fields: ['Front', 'Back', 'Add Reverse']
+      Field Count: 3
+
+
+
+================================================================================
+TOTAL: 14 files analyzed
