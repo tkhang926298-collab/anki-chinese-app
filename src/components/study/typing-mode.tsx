@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Eye, CheckCircle2, XCircle, ArrowLeftRight } from "lucide-react"
+import { Eye, CheckCircle2, XCircle, ArrowLeftRight, Volume2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,9 +17,10 @@ import { toast } from "sonner"
 interface TypingModeProps {
     card: any
     onNext: () => void
+    onResult?: (isCorrect: boolean) => void
 }
 
-export function TypingMode({ card, onNext }: TypingModeProps) {
+export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
     const [inputValue, setInputValue] = useState("")
     const [isRevealed, setIsRevealed] = useState(false)
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
@@ -123,6 +124,9 @@ export function TypingMode({ card, onNext }: TypingModeProps) {
             import('@/lib/utils').then(({ playTingSound }) => playTingSound())
         }
 
+        // Report result to parent
+        onResult?.(match)
+
         await submitReview(match)
     }
 
@@ -130,6 +134,7 @@ export function TypingMode({ card, onNext }: TypingModeProps) {
         if (isRevealed || isUpdating) return
         setIsCorrect(false)
         setIsRevealed(true)
+        onResult?.(false)
         await submitReview(false)
     }
 
@@ -184,10 +189,26 @@ export function TypingMode({ card, onNext }: TypingModeProps) {
 
                 {/* Front Face - Prompt */}
                 <Card className="w-full min-h-[16rem] flex flex-col items-center justify-center border-2 rounded-2xl bg-card shadow-sm p-8 relative overflow-hidden group">
-                    <div className="w-full text-left mb-auto">
+                    <div className="w-full flex items-center justify-between mb-auto">
                         <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                             {studyPair.promptLabel}
                         </span>
+                        <button
+                            onClick={() => {
+                                const text = card.front_html?.replace(/<[^>]*>/g, '').trim()
+                                if (text && typeof window !== 'undefined' && window.speechSynthesis) {
+                                    const utterance = new SpeechSynthesisUtterance(text)
+                                    utterance.lang = 'zh-CN'
+                                    utterance.rate = 0.8
+                                    window.speechSynthesis.cancel()
+                                    window.speechSynthesis.speak(utterance)
+                                }
+                            }}
+                            className="p-2 rounded-xl hover:bg-muted/80 transition-colors text-muted-foreground hover:text-primary"
+                            title="Phát âm"
+                        >
+                            <Volume2 className="h-4 w-4" />
+                        </button>
                     </div>
                     <CardContent className="p-4 sm:p-6 text-center w-full flex-1 overflow-y-auto max-h-[45vh] scrollbar-thin scrollbar-thumb-muted">
                         {(() => {

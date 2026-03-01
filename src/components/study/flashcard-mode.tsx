@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CheckCircle2, XCircle } from "lucide-react"
+import { CheckCircle2, XCircle, Volume2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AnkiHtml } from "./anki-html"
@@ -18,9 +18,10 @@ interface FlashcardModeProps {
     card: any
     choices: Choice[]
     onNext: () => void
+    onResult?: (isCorrect: boolean) => void
 }
 
-export function FlashcardMode({ card, choices, onNext }: FlashcardModeProps) {
+export function FlashcardMode({ card, choices, onNext, onResult }: FlashcardModeProps) {
     const [selectedChoice, setSelectedChoice] = useState<Choice | null>(null)
     const [isUpdating, setIsUpdating] = useState(false)
 
@@ -56,6 +57,9 @@ export function FlashcardMode({ card, choices, onNext }: FlashcardModeProps) {
         if (choice.isCorrect) {
             import('@/lib/utils').then(({ playTingSound }) => playTingSound())
         }
+
+        // Report result to parent
+        onResult?.(choice.isCorrect)
 
         try {
             const rating: Rating = choice.isCorrect ? 'good' : 'again'
@@ -126,10 +130,26 @@ export function FlashcardMode({ card, choices, onNext }: FlashcardModeProps) {
         <div className="w-full flex flex-col items-center max-w-4xl mx-auto space-y-10">
             {/* Question Face */}
             <Card className="w-full min-h-[20rem] flex flex-col items-center justify-center border-2 rounded-3xl bg-card shadow-sm p-8 relative overflow-hidden group">
-                <div className="w-full text-left mb-auto">
+                <div className="w-full flex items-center justify-between mb-auto">
                     <span className="text-sm font-bold tracking-wider text-muted-foreground uppercase opacity-80">
                         Thuật ngữ
                     </span>
+                    <button
+                        onClick={() => {
+                            const text = card.front_html?.replace(/<[^>]*>/g, '').trim()
+                            if (text && typeof window !== 'undefined' && window.speechSynthesis) {
+                                const utterance = new SpeechSynthesisUtterance(text)
+                                utterance.lang = 'zh-CN'
+                                utterance.rate = 0.8
+                                window.speechSynthesis.cancel()
+                                window.speechSynthesis.speak(utterance)
+                            }
+                        }}
+                        className="p-2 rounded-xl hover:bg-muted/80 transition-colors text-muted-foreground hover:text-primary"
+                        title="Phát âm"
+                    >
+                        <Volume2 className="h-5 w-5" />
+                    </button>
                 </div>
                 <CardContent className="p-0 text-center w-full flex-1 flex flex-col justify-center items-center mt-2">
                     <AnkiHtml className="text-5xl sm:text-6xl lg:text-7xl font-medium text-foreground w-full leading-tight font-chinese" html={card.front_html} />

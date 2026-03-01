@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense, useMemo } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
-import { ArrowLeft, Loader2, Sparkles, Settings2, BookOpen, Keyboard } from "lucide-react"
+import { ArrowLeft, Loader2, Sparkles, Settings2, BookOpen, Keyboard, CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client"
 import { db } from "@/lib/db/local"
 import { FlashcardMode } from "@/components/study/flashcard-mode"
 import { TypingMode } from "@/components/study/typing-mode"
+import { SessionSummary } from "@/components/study/session-summary"
 import { parseCardFields } from "@/lib/parse-card-fields"
 
 export const dynamic = 'force-dynamic'
@@ -36,6 +37,11 @@ function StudyPageContent() {
     const [configMode, setConfigMode] = useState<'flashcard' | 'typing'>((mode as 'flashcard' | 'typing') || 'flashcard')
     const [configLimit, setConfigLimit] = useState<number>(20)
     const [configSwap, setConfigSwap] = useState(false)
+
+    // Session tracking
+    const [correctCount, setCorrectCount] = useState(0)
+    const [wrongCount, setWrongCount] = useState(0)
+    const [sessionStartTime, setSessionStartTime] = useState<number>(0)
 
     const currentCard = cards[currentIndex]
 
@@ -160,15 +166,24 @@ function StudyPageContent() {
         if (currentIndex < cards.length - 1) {
             setCurrentIndex(prev => prev + 1)
         } else {
-            // Finished session
-            setCards([])
+            // Finished session - go to summary (don't clear cards so summary can use length)
+            setCurrentIndex(cards.length)
         }
+    }
+
+    // Callback from FlashcardMode/TypingMode to track correct/wrong
+    const handleResult = (isCorrect: boolean) => {
+        if (isCorrect) setCorrectCount(prev => prev + 1)
+        else setWrongCount(prev => prev + 1)
     }
 
     const startSession = () => {
         setCards(allDueCards.slice(0, configLimit))
         setIsConfiguring(false)
         setCurrentIndex(0)
+        setCorrectCount(0)
+        setWrongCount(0)
+        setSessionStartTime(Date.now())
     }
 
     if (isLoading) {
@@ -183,21 +198,13 @@ function StudyPageContent() {
 
     if (isSessionFinished && !isConfiguring) {
         return (
-            <div className="container py-20 max-w-2xl flex flex-col items-center justify-center text-center space-y-6">
-                <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="h-24 w-24 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
-                    <Sparkles className="h-12 w-12 text-emerald-600" />
-                </motion.div>
-                <h1 className="text-3xl font-bold tracking-tight">Tuyệt vời!</h1>
-                <p className="text-xl text-muted-foreground">
-                    Bạn đã hoàn thành phiên học hôm nay.
-                </p>
-                <div className="flex gap-4 mt-8">
-                    <Button variant="outline" size="lg" onClick={() => { setIsConfiguring(true); setCards([]); }}>Học tiếp</Button>
-                    <Link href="/dashboard">
-                        <Button size="lg">Quay lại</Button>
-                    </Link>
-                </div>
-            </div>
+            <SessionSummary
+                totalCards={cards.length}
+                correctCount={correctCount}
+                wrongCount={wrongCount}
+                sessionDurationMs={Date.now() - sessionStartTime}
+                onStudyMore={() => { setIsConfiguring(true); setCards([]); }}
+            />
         )
     }
 
@@ -296,7 +303,11 @@ function StudyPageContent() {
                     <div className="flex-1 space-y-1">
                         <div className="flex justify-between text-sm font-medium">
                             <span className="text-muted-foreground">Tiến độ phiên học</span>
-                            <span>{currentIndex + 1} / {cards.length}</span>
+                            <div className="flex items-center gap-3">
+                                {correctCount > 0 && <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400"><CheckCircle2 className="h-3.5 w-3.5" />{correctCount}</span>}
+                                {wrongCount > 0 && <span className="flex items-center gap-1 text-red-500"><XCircle className="h-3.5 w-3.5" />{wrongCount}</span>}
+                                <span>{currentIndex + 1} / {cards.length}</span>
+                            </div>
                         </div>
                         <Progress value={progressPercent} className="h-2" />
                     </div>
@@ -308,12 +319,14 @@ function StudyPageContent() {
                     <TypingMode
                         card={currentCard}
                         onNext={handleNextCard}
+                        onResult={handleResult}
                     />
                 ) : (
                     <FlashcardMode
                         card={currentCard}
                         choices={dummyChoices}
                         onNext={handleNextCard}
+                        onResult={handleResult}
                     />
                 )}
             </div>
