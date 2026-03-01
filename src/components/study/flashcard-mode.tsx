@@ -265,6 +265,8 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt, pin
                 hanzi={parsed.hanzi || card.front_html?.replace(/<[^>]*>/g, '').trim() || ''}
                 pinyin={parsed.pinyin || pinyin}
                 meaning={parsed.meaning}
+                cardId={card.id}
+                userId={card.user_id}
             />
         </div>
     )

@@ -351,6 +351,8 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
                 hanzi={parsed.hanzi || card.front_html?.replace(/<[^>]*>/g, '').trim() || ''}
                 pinyin={parsed.pinyin}
                 meaning={parsed.meaning}
+                cardId={card.id}
+                userId={card.user_id}
             />
         </AnimatePresence>
     )
