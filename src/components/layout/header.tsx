@@ -65,6 +65,12 @@ export function Header() {
                             >
                                 Tra Cứu
                             </Link>
+                            <Link
+                                href="/cognates"
+                                className="transition-colors hover:text-foreground/80 text-foreground/60"
+                            >
+                                Từ Đồng Âm
+                            </Link>
                         </nav>
                     )}
                 </div>

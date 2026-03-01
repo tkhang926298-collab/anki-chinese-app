@@ -10,6 +10,7 @@ import { db } from "@/lib/db/local"
 import { toast } from "sonner"
 import { parseCardFields } from "@/lib/parse-card-fields"
 import { SentenceComposerModal } from "./sentence-composer-modal"
+import { HanziWriterModal } from "./hanzi-writer-modal"
 
 interface Choice {
     html: string
@@ -30,6 +31,7 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt, pin
     const [selectedChoice, setSelectedChoice] = useState<Choice | null>(null)
     const [isUpdating, setIsUpdating] = useState(false)
     const [showComposer, setShowComposer] = useState(false)
+    const [showHanziWriter, setShowHanziWriter] = useState(false)
 
     // Extract parsed fields for the composer
     const parsed = parseCardFields(card)
@@ -245,6 +247,17 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt, pin
                         variant="outline"
                         size="lg"
                         className="h-16 px-6 rounded-2xl border-2 text-sm font-semibold flex items-center gap-2 flex-shrink-0"
+                        onClick={() => setShowHanziWriter(true)}
+                        disabled={isUpdating}
+                        title="Luyện viết chữ Hán"
+                    >
+                        <PenSquare className="h-5 w-5" />
+                        <span className="hidden sm:inline">Luyện viết</span>
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        className="h-16 px-6 rounded-2xl border-2 text-sm font-semibold flex items-center gap-2 flex-shrink-0"
                         onClick={() => setShowComposer(true)}
                         disabled={isUpdating}
                         title="Đặt câu với từ này để luyện tập thêm"
@@ -267,6 +280,13 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt, pin
                 meaning={parsed.meaning}
                 cardId={card.id}
                 userId={card.user_id}
+            />
+
+            {/* Hanzi Writer Modal */}
+            <HanziWriterModal
+                isOpen={showHanziWriter}
+                onClose={() => setShowHanziWriter(false)}
+                character={(parsed.hanzi || card.front_html?.replace(/<[^>]*>/g, '').trim() || '')[0] || ''} // Lấy kí tự đầu tiên
             />
         </div>
     )

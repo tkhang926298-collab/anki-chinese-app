@@ -14,6 +14,7 @@ import { calculateNextReview, Rating, CardState } from "@/lib/fsrs/scheduler"
 import { db } from "@/lib/db/local"
 import { toast } from "sonner"
 import { SentenceComposerModal } from "./sentence-composer-modal"
+import { HanziWriterModal } from "./hanzi-writer-modal"
 
 interface TypingModeProps {
     card: any
@@ -28,6 +29,7 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
     const [isUpdating, setIsUpdating] = useState(false)
     const [swapSides, setSwapSides] = useState(false)
     const [showComposer, setShowComposer] = useState(false)
+    const [showHanziWriter, setShowHanziWriter] = useState(false)
 
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -328,6 +330,17 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
                                     variant="outline"
                                     size="lg"
                                     className="h-14 px-5 rounded-xl border-2 text-sm font-semibold flex items-center gap-2 flex-shrink-0"
+                                    onClick={() => setShowHanziWriter(true)}
+                                    disabled={isUpdating}
+                                    title="Luyện viết chữ Hán"
+                                >
+                                    <PenSquare className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Luyện viết</span>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    className="h-14 px-5 rounded-xl border-2 text-sm font-semibold flex items-center gap-2 flex-shrink-0"
                                     onClick={() => setShowComposer(true)}
                                     disabled={isUpdating}
                                     title="Đặt câu với từ này"
@@ -344,7 +357,6 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
                 </div>
             </motion.div>
 
-            {/* Sentence Composer Modal */}
             <SentenceComposerModal
                 open={showComposer}
                 onClose={() => setShowComposer(false)}
@@ -353,6 +365,13 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
                 meaning={parsed.meaning}
                 cardId={card.id}
                 userId={card.user_id}
+            />
+
+            {/* Hanzi Writer Modal */}
+            <HanziWriterModal
+                isOpen={showHanziWriter}
+                onClose={() => setShowHanziWriter(false)}
+                character={(parsed.hanzi || card.front_html?.replace(/<[^>]*>/g, '').trim() || '')[0] || ''}
             />
         </AnimatePresence>
     )
