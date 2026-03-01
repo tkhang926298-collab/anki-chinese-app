@@ -5,10 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:worker": "npx @opennextjs/cloudflare build",
     "start": "next start",
     "lint": "eslint",
-    "preview": "npx opennextjs-cloudflare preview",
-    "deploy": "npx opennextjs-cloudflare deploy"
+    "preview": "npx @opennextjs/cloudflare preview",
+    "deploy": "npx @opennextjs/cloudflare deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
