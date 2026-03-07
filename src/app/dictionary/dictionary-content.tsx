@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { HanziWriterModal } from "@/components/study/hanzi-writer-modal"
 
 // Định dạng dữ liệu thu gọn trong CVDICT.json
 interface CVDEntry {
@@ -20,6 +21,7 @@ export function DictionaryContent() {
     const [dbData, setDbData] = useState<CVDEntry[]>([])
     const [searchQuery, setSearchQuery] = useState('')
     const [debouncedQuery, setDebouncedQuery] = useState('')
+    const [selectedChar, setSelectedChar] = useState<string | null>(null)
 
     // Pagination / Virtualization state (Hiển thị giới hạn để không lag DOM)
     const [visibleCount, setVisibleCount] = useState(50)
@@ -167,9 +169,18 @@ export function DictionaryContent() {
                                 {/* Cột Chữ Hán & Pinyin */}
                                 <div className="bg-muted/30 p-5 md:w-1/3 border-b md:border-b-0 md:border-r flex flex-col justify-center items-center text-center">
                                     <div className="flex flex-col items-center">
-                                        <h2 className="text-4xl md:text-5xl font-bold font-serif mb-3 tracking-wide text-foreground">
-                                            {entry.s}
-                                        </h2>
+                                        <div className="flex justify-center gap-0.5 mb-3">
+                                            {entry.s.split('').map((char, charIdx) => (
+                                                <span
+                                                    key={charIdx}
+                                                    className="text-4xl md:text-5xl font-bold font-serif tracking-wide text-foreground cursor-pointer hover:text-primary hover:-translate-y-1 transition-all"
+                                                    onClick={() => setSelectedChar(char)}
+                                                    title={`Click để luyện viết và xem nét chữ "${char}"`}
+                                                >
+                                                    {char}
+                                                </span>
+                                            ))}
+                                        </div>
                                         {entry.t !== entry.s && (
                                             <span className="text-sm font-serif text-muted-foreground mb-2">
                                                 Phồn: {entry.t}
@@ -215,6 +226,14 @@ export function DictionaryContent() {
                     <h3 className="text-2xl font-bold mb-2">Kho Tàng Từ Vựng Hán Việt</h3>
                     <p className="text-lg max-w-sm">Hơn 122 Ngàn từ vựng chuyên sâu (CVDICT + CC-CEDICT) nằm gọn trong tay bạn.</p>
                 </div>
+            )}
+
+            {selectedChar && (
+                <HanziWriterModal
+                    isOpen={!!selectedChar}
+                    onClose={() => setSelectedChar(null)}
+                    character={selectedChar}
+                />
             )}
         </div>
     )

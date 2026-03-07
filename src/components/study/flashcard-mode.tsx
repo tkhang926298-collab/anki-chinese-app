@@ -11,6 +11,7 @@ import { toast } from "sonner"
 import { parseCardFields } from "@/lib/parse-card-fields"
 import { SentenceComposerModal } from "./sentence-composer-modal"
 import { HanziWriterModal } from "./hanzi-writer-modal"
+import { useTTS } from "@/hooks/use-tts"
 
 interface Choice {
     html: string
@@ -32,6 +33,9 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt, pin
     const [isUpdating, setIsUpdating] = useState(false)
     const [showComposer, setShowComposer] = useState(false)
     const [showHanziWriter, setShowHanziWriter] = useState(false)
+
+    // Web Speech API wrapper
+    const { speak, isSpeaking } = useTTS()
 
     // Extract parsed fields for the composer
     const parsed = parseCardFields(card)
@@ -153,20 +157,15 @@ export function FlashcardMode({ card, choices, onNext, onResult, swapPrompt, pin
                     </span>
                     {!swapPrompt && (
                         <button
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.stopPropagation();
                                 const text = card.front_html?.replace(/<[^>]*>/g, '').trim()
-                                if (text && typeof window !== 'undefined' && window.speechSynthesis) {
-                                    const utterance = new SpeechSynthesisUtterance(text)
-                                    utterance.lang = 'zh-CN'
-                                    utterance.rate = 0.8
-                                    window.speechSynthesis.cancel()
-                                    window.speechSynthesis.speak(utterance)
-                                }
+                                if (text) speak(text)
                             }}
-                            className="p-2 rounded-xl hover:bg-muted/80 transition-colors text-muted-foreground hover:text-primary"
+                            className={`p-2 rounded-xl transition-colors ${isSpeaking ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-muted/80 hover:text-primary'}`}
                             title="Phát âm"
                         >
-                            <Volume2 className="h-5 w-5" />
+                            <Volume2 className={`h-5 w-5 ${isSpeaking ? 'animate-pulse' : ''}`} />
                         </button>
                     )}
                 </div>

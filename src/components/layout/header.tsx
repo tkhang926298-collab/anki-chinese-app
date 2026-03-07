@@ -15,6 +15,7 @@ const navItems = [
     { href: "/import", label: "Import Deck" },
     { href: "/dictionary", label: "Tra Cứu" },
     { href: "/cognates", label: "Từ Đồng Âm" },
+    { href: "/reader", label: "Reader" },
 ]
 
 export function Header() {
@@ -26,8 +27,18 @@ export function Header() {
 
     useEffect(() => {
         const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            setUser(user)
+            try {
+                const { data, error } = await supabase.auth.getUser()
+                if (error) {
+                    console.error("Header Auth Error:", error)
+                    setUser(null)
+                } else {
+                    setUser(data?.user || null)
+                }
+            } catch (err) {
+                console.error("Header Auth Exception:", err)
+                setUser(null)
+            }
         }
         getUser()
 

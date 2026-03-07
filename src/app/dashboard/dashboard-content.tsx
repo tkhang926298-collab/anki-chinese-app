@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { BookOpen, Clock, Plus, Target, TrendingUp, UploadCloud, Trash2, Tag, Flame, Search, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
+import { ActivityCalendar } from "react-activity-calendar"
 
 import { useLiveQuery } from "dexie-react-hooks"
 import { db } from "@/lib/db/local"
@@ -155,6 +156,43 @@ export default function DashboardContent() {
         }
     }, []) || { todayReviews: 0, streak: 0 }
 
+    // Tính toán dữ liệu Heatmap
+    const calendarData = useLiveQuery(async () => {
+        try {
+            const allLogs = await db.review_logs.toArray();
+            const countsByDate = new Map<string, number>();
+
+            // Generate last 365 days
+            const now = new Date();
+            const yearAgo = new Date(now);
+            yearAgo.setFullYear(now.getFullYear() - 1);
+
+            for (let d = new Date(yearAgo); d <= now; d.setDate(d.getDate() + 1)) {
+                countsByDate.set(d.toISOString().split('T')[0], 0);
+            }
+
+            for (const log of allLogs) {
+                if (!log.review) continue;
+                const d = new Date(log.review);
+                if (isNaN(d.getTime())) continue;
+                if (d < yearAgo) continue;
+
+                const dateStr = d.toISOString().split('T')[0];
+                if (countsByDate.has(dateStr)) {
+                    countsByDate.set(dateStr, countsByDate.get(dateStr)! + 1);
+                }
+            }
+
+            return Array.from(countsByDate.entries()).map(([date, count]) => ({
+                date,
+                count,
+                level: count === 0 ? 0 : count < 10 ? 1 : count < 30 ? 2 : count < 80 ? 3 : 4
+            }));
+        } catch (e) {
+            return [];
+        }
+    }, []) || [];
+
     if (isLoading && !decksWithStats) {
         return (
             <div className="container py-10 flex justify-center items-center h-[50vh]">
@@ -237,6 +275,43 @@ export default function DashboardContent() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Heatmap Section */}
+            <Card className="mb-10 bg-card/40 backdrop-blur-xl shadow-lg border-primary/10 overflow-hidden">
+                <CardHeader className="pb-4">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-primary" />
+                        Bản đồ Hăng hái (365 ngày qua)
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex justify-center overflow-x-auto pb-6">
+                    {calendarData.length > 0 ? (
+                        <ActivityCalendar
+                            data={calendarData}
+                            theme={{
+                                light: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
+                                dark: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
+                            }}
+                            labels={{
+                                legend: {
+                                    less: 'Ít',
+                                    more: 'Nhiều'
+                                },
+                                months: [
+                                    'Thg 1', 'Thg 2', 'Thg 3', 'Thg 4', 'Thg 5', 'Thg 6',
+                                    'Thg 7', 'Thg 8', 'Thg 9', 'Thg 10', 'Thg 11', 'Thg 12'
+                                ],
+                                totalCount: '{{count}} thẻ trong {{year}}'
+                            }}
+                            colorScheme="dark"
+                        />
+                    ) : (
+                        <div className="h-[120px] flex items-center justify-center text-muted-foreground w-full">
+                            Đang tải lịch sử học tập...
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
             <div className="flex items-center gap-4 mb-4">
                 <h2 className="text-xl font-semibold tracking-tight">Bộ Từ Vựng Của Bạn</h2>

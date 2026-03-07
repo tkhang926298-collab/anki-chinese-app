@@ -15,6 +15,7 @@ import { db } from "@/lib/db/local"
 import { toast } from "sonner"
 import { SentenceComposerModal } from "./sentence-composer-modal"
 import { HanziWriterModal } from "./hanzi-writer-modal"
+import { useTTS } from "@/hooks/use-tts"
 
 interface TypingModeProps {
     card: any
@@ -30,6 +31,9 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
     const [swapSides, setSwapSides] = useState(false)
     const [showComposer, setShowComposer] = useState(false)
     const [showHanziWriter, setShowHanziWriter] = useState(false)
+
+    // TTS
+    const { speak, isSpeaking } = useTTS()
 
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -204,20 +208,15 @@ export function TypingMode({ card, onNext, onResult }: TypingModeProps) {
                             {studyPair.promptLabel}
                         </span>
                         <button
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.stopPropagation();
                                 const text = card.front_html?.replace(/<[^>]*>/g, '').trim()
-                                if (text && typeof window !== 'undefined' && window.speechSynthesis) {
-                                    const utterance = new SpeechSynthesisUtterance(text)
-                                    utterance.lang = 'zh-CN'
-                                    utterance.rate = 0.8
-                                    window.speechSynthesis.cancel()
-                                    window.speechSynthesis.speak(utterance)
-                                }
+                                if (text) speak(text)
                             }}
-                            className="p-2 rounded-xl hover:bg-muted/80 transition-colors text-muted-foreground hover:text-primary"
+                            className={`p-2 rounded-xl transition-colors ${isSpeaking ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-muted/80 hover:text-primary'}`}
                             title="Phát âm"
                         >
-                            <Volume2 className="h-4 w-4" />
+                            <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
                         </button>
                     </div>
                     <CardContent className="p-4 sm:p-6 text-center w-full flex-1 overflow-y-auto max-h-[45vh] scrollbar-thin scrollbar-thumb-muted">
